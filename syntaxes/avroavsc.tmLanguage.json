@@ -1,0 +1,92 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Avro avsc",
+	"patterns": [
+		{
+			"include": "#name"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#type"
+		},
+		{
+			"include": "#logicaltype"
+		},
+		{
+			"include": "#values"
+		},
+		{
+			"include": "#strings"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"match": "(\")(name|type|fields|doc|symbols|items|default|namespace|logicalType|precision|scale|size)(\")",
+				"captures": {
+					"1": { "name": "string.quoted.avroavsc"},
+					"2": { "name": "keyword.struct.avroavsc"},
+					"3": { "name": "string.quoted.avroavsc"}
+				}
+			}]
+		},
+		"name": {
+			"patterns": [{
+				"match": "(\")(name)(\"):\\s*(\")([A-Za-z_][A-Za-z0-9_]*)(\")",
+				"captures": {
+					"1": { "name": "string.quoted.avroavsc"},
+					"2": { "name": "keyword.struct.avroavsc"},
+					"3": { "name": "string.quoted.avroavsc"},
+					"4": { "name": "string.quoted.avroavsc"},
+					"5": { "name": "entity.name.class.avroavsc"},
+					"6": { "name": "string.quoted.avroavsc"}
+				}
+			}]
+		},
+		"type": {
+			"patterns": [{
+				"match": "(\")(null|boolean|int|long|float|double|bytes|string|record|enum|array|map|fixed)(\")",
+				"captures": {
+					"1": { "name": "string.quoted.avroavsc"},
+					"2": { "name": "keyword.control.avroavsc"},
+					"3": { "name": "string.quoted.avroavsc"}
+				}
+			}]
+		},
+		"logicaltype": {
+			"patterns": [{
+				"match": "(\")(decimal|uuid|date|time-millis|time-micros|timestamp-millis|timestamp-micros|local-timestamp-millis|local-timestamp-micros|duration)(\")",
+				"captures": {
+					"1": { "name": "string.quoted.avroavsc"},
+					"2": { "name": "entity.name.function.avroavsc"},
+					"3": { "name": "string.quoted.avroavsc"}
+				}
+			}]
+		},
+		"values": {
+			"patterns": [{
+				"match": "(null|-?\\d+(\\.\\d+)?|false|true)",
+				"captures": {
+					"1": { "name": "variable.name.avroavsc"}
+				}
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.avroavsc",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.avroavsc",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.avsc"
+}
+
+
+
