@@ -9,6 +9,6 @@
 		"outDir": "out",
 		"rootDir": "src"
 	},
-	"include": ["src"],
+	"include": ["src", "test/test.ts"],
 	"exclude": ["node_modules", ".vscode-test"]
 }
