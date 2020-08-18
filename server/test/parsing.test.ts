@@ -74,7 +74,7 @@ describe('Tokenize', () => {
 		assert.equal(result[3].value, "b");
 	});
 	it('should return null', () => {
-		let nullDocuments = ['null', 'null ', 'null\t', 'null\n', 'null}', 'null]'];
+		let nullDocuments = ['null', 'null ', 'null\t', 'null\n', 'null}', 'null]', 'null{', 'null[', 'null,'];
 		nullDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result[0].token, Token.Null);
@@ -93,5 +93,21 @@ describe('Tokenize', () => {
 		assert.equal(result[1].token, Token.FreeText);
 		assert.equal(result[1].value, "unknown");
 		assert.equal(result[2].token, Token.RightBracket);
+	});
+	it('should return integer', () => {
+		let intDocuments = ['124', '-2 ', '98\t', '1762873\n', '6573}', '-873]', '54{', '70854[', '-67845,'];
+		intDocuments.forEach(function (document) {
+			const result = tokenize(document);
+			assert.equal(result[0].token, Token.Integer);
+		});
+	});
+	it('should return integer with correct value', () => {
+		let ints = [124, -2, 98, 1762873, 6573, -873, 54, 70854, -67845];
+		ints.forEach(function (value) {
+			let valueText = value.toString();
+			const result = tokenize(valueText);
+			assert.equal(result[0].token, Token.Integer);
+			assert.equal(result[0].value, valueText);
+		});
 	});
 });

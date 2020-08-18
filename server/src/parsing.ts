@@ -7,7 +7,8 @@ export enum Token {
   Comma,
   String,
   Null,
-  FreeText
+  FreeText,
+  Integer
 }
 
 export class TokenInfo {
@@ -74,7 +75,6 @@ export function tokenize(document: string): TokenInfo[] {
   let tokens = new TokenInfoContainer();
   let insideString = false;
   let textContainer = new TextContainer();
-  // let text = "";
   while (true) {
     switch (document[position]) {
       case '{':
@@ -129,13 +129,48 @@ export function tokenize(document: string): TokenInfo[] {
               position += 3;
               break;
             }
-            else if (document[position + 4] === ' ' || document[position + 4] === '\t' ||
-              document[position + 4] === '\n' || document[position + 4] === '}' || document[position + 4] === ']'){
+            else if ([' ', '\t', '\n', '}', ']', ',', '{', '['].includes(document[position + 4])){
                 tokens.push(new TokenInfo(Token.Null));
                 position += 3;
                 break;
             }
           }
+        textContainer.push(document[position]);
+        break;
+      case "-":
+      case "1":
+      case "2":
+      case "3":
+      case "4":
+      case "5":
+      case "6":
+      case "7":
+      case "8":
+      case "9":
+        let numberText = document[position];
+        let numberDepth = 1;
+        let isInt = true;
+        while (true) {
+          let numberPosition = position + numberDepth;
+          if (numberPosition === document.length || [' ', '\t', '\n', '}', ']', ',', '{', '['].includes(document[numberPosition])) {
+            break;
+          }
+          else if (document.charCodeAt(numberPosition) >= 48 && document.charCodeAt(numberPosition) <= 57){
+            numberText += document[numberPosition];
+            numberDepth++;
+          }
+          else {
+            isInt = false;
+            break;
+          }
+        }
+        if (isInt && numberText !== '-') {
+          tokens.push(new TokenInfo(Token.Integer, numberText));
+          position += (numberDepth - 1);
+          break;
+        }
+        textContainer.push(document[position]);
+        break;
       default:
         textContainer.push(document[position]);
     }

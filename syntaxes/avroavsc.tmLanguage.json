@@ -67,9 +67,9 @@
 		},
 		"values": {
 			"patterns": [{
-				"match": "(null|-?\\d+(\\.\\d+)?|false|true)",
+				"match": "(,|\\}|\\{|\\[|\\]| |\\t|\\:|^)(null|-?\\d+(\\.\\d+)?|false|true)(,|\\}|\\{|\\[|\\]| |\\t|$)",
 				"captures": {
-					"1": { "name": "variable.name.avroavsc"}
+					"2": { "name": "variable.name.avroavsc"}
 				}
 			}]
 		},
