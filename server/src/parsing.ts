@@ -66,6 +66,14 @@ class TextContainer {
   }
 }
 
+function isTokenBreaker(document: string, position: number): boolean {
+  if (position < 0 || document.length <= position) {
+    return true;
+  }
+  
+  return [' ', '\t', '\n', '\r', '}', ']', ',', '{', '[', ':'].includes(document[position]);
+}
+
 export function tokenize(document: string): TokenInfo[] {
   if (document.length === 0) {
     return []
@@ -106,9 +114,11 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(textContainer.endString());
           insideString = false;
         }
-        else {
-          tokens.push(textContainer.endFreeText());
+        else if (isTokenBreaker(document, position - 1)){
           insideString = true;
+        }
+        else {
+          textContainer.push(document[position]);
         }
         break;
       case " ":
@@ -120,21 +130,16 @@ export function tokenize(document: string): TokenInfo[] {
         tokens.push(textContainer.endFreeText());
         break;
       case "n":
-        if (!insideString && position + 3 <= document.length && 
+        if (!insideString && isTokenBreaker(document, position - 1) && position + 3 <= document.length && 
           document[position + 1] === 'u' &&
           document[position + 2] === 'l' &&
           document[position + 3] === 'l') {
-            if (position + 4 === document.length){
-              tokens.push(new TokenInfo(Token.Null));
-              position += 3;
-              break;
-            }
-            else if ([' ', '\t', '\n', '}', ']', ',', '{', '['].includes(document[position + 4])){
-                tokens.push(new TokenInfo(Token.Null));
-                position += 3;
-                break;
-            }
+          if (isTokenBreaker(document, position+4)){
+            tokens.push(new TokenInfo(Token.Null));
+            position += 3;
+            break;
           }
+        }
         textContainer.push(document[position]);
         break;
       case "-":
@@ -147,27 +152,29 @@ export function tokenize(document: string): TokenInfo[] {
       case "7":
       case "8":
       case "9":
-        let numberText = document[position];
-        let numberDepth = 1;
-        let isInt = true;
-        while (true) {
-          let numberPosition = position + numberDepth;
-          if (numberPosition === document.length || [' ', '\t', '\n', '}', ']', ',', '{', '['].includes(document[numberPosition])) {
+        if (isTokenBreaker(document, position - 1)) {
+          let numberText = document[position];
+          let numberDepth = 1;
+          let isInt = true;
+          while (true) {
+            let numberPosition = position + numberDepth;
+            if (isTokenBreaker(document, numberPosition)) {
+              break;
+            }
+            else if (document.charCodeAt(numberPosition) >= 48 && document.charCodeAt(numberPosition) <= 57){
+              numberText += document[numberPosition];
+              numberDepth++;
+            }
+            else {
+              isInt = false;
+              break;
+            }
+          }
+          if (isInt && numberText !== '-') {
+            tokens.push(new TokenInfo(Token.Integer, numberText));
+            position += (numberDepth - 1);
             break;
           }
-          else if (document.charCodeAt(numberPosition) >= 48 && document.charCodeAt(numberPosition) <= 57){
-            numberText += document[numberPosition];
-            numberDepth++;
-          }
-          else {
-            isInt = false;
-            break;
-          }
-        }
-        if (isInt && numberText !== '-') {
-          tokens.push(new TokenInfo(Token.Integer, numberText));
-          position += (numberDepth - 1);
-          break;
         }
         textContainer.push(document[position]);
         break;

@@ -84,10 +84,20 @@ describe('Tokenize', () => {
 		let notNullDocuments = ['nullnot', 'null12', '"null"'];
 		notNullDocuments.forEach(function (document) {
 			const result = tokenize(document);
+			assert.equal(result.length, 1);
 			assert.notEqual(result[0].token, Token.Null);
 		});
 	});
-	it('should return free text', () => {
+	it('should return free text without matching other token', () => {
+		let freeText = ['nullnot', 'null12', 'asdnull', '123null', 'asd132', 'asd"qweqe"'];
+		freeText.forEach(function (document) {
+			const result = tokenize(document);
+			assert.equal(result.length, 1);
+			assert.equal(result[0].token, Token.FreeText);
+			assert.equal(result[0].value, document);
+		});
+	});
+	it('should return free text when containing other matches', () => {
 		const result = tokenize('{unknown}');
 		assert.equal(result[0].token, Token.LeftBracket);
 		assert.equal(result[1].token, Token.FreeText);
@@ -109,5 +119,11 @@ describe('Tokenize', () => {
 			assert.equal(result[0].token, Token.Integer);
 			assert.equal(result[0].value, valueText);
 		});
+	});
+	it('should not return integer', () => {
+		const result = tokenize('test123');
+		assert.equal(result.length, 1);
+		assert.equal(result[0].token, Token.FreeText);
+		assert.equal(result[0].value, "test123");
 	});
 });
