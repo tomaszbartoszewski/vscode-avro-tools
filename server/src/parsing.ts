@@ -14,10 +14,17 @@ export enum Token {
 export class TokenInfo {
   token: Token;
   value: string | null;
+  line: number;
+  column: number;
+  length: number;
 
   constructor(token: Token, value: string | null = null) {
     this.token = token;
     this.value = value;
+    // line: number, column: number,
+    this.line = 0;
+    this.column = 0;
+    this.length = 0;
   }
 }
 
@@ -66,12 +73,62 @@ class TextContainer {
   }
 }
 
-function isTokenBreaker(document: string, position: number): boolean {
-  if (position < 0 || document.length <= position) {
-    return true;
+class DocumentIterator {
+  document: string;
+  position: number;
+  line: number;
+  column: number;
+  nextLine: number;
+  nextColumn: number;
+
+  constructor(document: string) {
+    this.document = document;
+    this.position = -1;
+    this.line = 0;
+    this.column = -1;
+    this.nextLine = 0;
+    this.nextColumn = 0;
   }
-  
-  return [' ', '\t', '\n', '\r', '}', ']', ',', '{', '[', ':'].includes(document[position]);
+
+  getNext(): string {
+    this.line = this.nextLine;
+    this.column = this.nextColumn;
+    this.position++;
+    let value = this.document[this.position];
+    if (value === '\n') {
+      this.nextLine++;
+      this.nextColumn = 0;
+    }
+    else if (value !== '\r') {
+      this.nextColumn++;
+    }
+    return value;
+  }
+
+  getCurrent(): string {
+    return this.document[this.position];
+  }
+
+  scan(length: number): string {
+    return this.document.slice(this.position, length);
+  }
+
+  moveCursor(length: number) {
+    this.position += length;
+  }
+
+  end(): boolean {
+    return this.position + 1 >= this.document.length;
+  }
+
+  isTokenBreaker(jump: number): boolean {
+    let toCheck = this.position + jump;
+    if (toCheck < 0 || this.document.length <= toCheck) {
+      return true;
+    }
+    
+    return [' ', '\t', '\n', '\r', '}', ']', ',', '{', '[', ':'].includes(this.document[toCheck]);
+  }
 }
 
 export function tokenize(document: string): TokenInfo[] {
@@ -79,12 +136,12 @@ export function tokenize(document: string): TokenInfo[] {
     return []
   }
 
-  let position = 0;
   let tokens = new TokenInfoContainer();
   let insideString = false;
   let textContainer = new TextContainer();
+  let iterator = new DocumentIterator(document);
   while (true) {
-    switch (document[position]) {
+    switch (iterator.getNext()) {
       case '{':
         tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.LeftBracket));
@@ -114,11 +171,11 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(textContainer.endString());
           insideString = false;
         }
-        else if (isTokenBreaker(document, position - 1)){
+        else if (iterator.isTokenBreaker(- 1)){
           insideString = true;
         }
         else {
-          textContainer.push(document[position]);
+          textContainer.push(iterator.getCurrent());
         }
         break;
       case " ":
@@ -130,17 +187,12 @@ export function tokenize(document: string): TokenInfo[] {
         tokens.push(textContainer.endFreeText());
         break;
       case "n":
-        if (!insideString && isTokenBreaker(document, position - 1) && position + 3 <= document.length && 
-          document[position + 1] === 'u' &&
-          document[position + 2] === 'l' &&
-          document[position + 3] === 'l') {
-          if (isTokenBreaker(document, position+4)){
+        if (!insideString && iterator.isTokenBreaker(-1) && iterator.scan(4) === "null" && iterator.isTokenBreaker(4)){
             tokens.push(new TokenInfo(Token.Null));
-            position += 3;
+            iterator.moveCursor(3);
             break;
-          }
         }
-        textContainer.push(document[position]);
+        textContainer.push(iterator.getCurrent());
         break;
       case "-":
       case "1":
@@ -152,17 +204,17 @@ export function tokenize(document: string): TokenInfo[] {
       case "7":
       case "8":
       case "9":
-        if (isTokenBreaker(document, position - 1)) {
-          let numberText = document[position];
+        if (iterator.isTokenBreaker(-1)) {
+          let numberText = iterator.getCurrent();
           let numberDepth = 1;
           let isInt = true;
           while (true) {
-            let numberPosition = position + numberDepth;
-            if (isTokenBreaker(document, numberPosition)) {
+            if (iterator.isTokenBreaker(1)) {
               break;
             }
-            else if (document.charCodeAt(numberPosition) >= 48 && document.charCodeAt(numberPosition) <= 57){
-              numberText += document[numberPosition];
+            let nextValue = iterator.getNext();
+            if (nextValue.charCodeAt(0) >= 48 && nextValue.charCodeAt(0) <= 57){
+              numberText += nextValue;
               numberDepth++;
             }
             else {
@@ -172,17 +224,18 @@ export function tokenize(document: string): TokenInfo[] {
           }
           if (isInt && numberText !== '-') {
             tokens.push(new TokenInfo(Token.Integer, numberText));
-            position += (numberDepth - 1);
             break;
           }
+          else {
+            iterator.moveCursor(-numberDepth);
+          }
         }
-        textContainer.push(document[position]);
+        textContainer.push(iterator.getCurrent());
         break;
       default:
-        textContainer.push(document[position]);
+        textContainer.push(iterator.getCurrent());
     }
-    position++;
-    if (position >= document.length) {
+    if (iterator.end()) {
       tokens.push(textContainer.endFreeText());
       break;
     }
