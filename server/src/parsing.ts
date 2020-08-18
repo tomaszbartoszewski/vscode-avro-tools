@@ -109,6 +109,44 @@ class DocumentIterator {
     return this.document[this.position];
   }
 
+  tryGetString(): [string, boolean] {
+    if (!this.isTokenBreaker(-1)) {
+      return ["", false];
+    }
+    let depth = 1;
+    let text = "";
+    while (true) {
+      if (this.document[this.position + depth] === "\""){
+        if (this.isTokenBreaker(depth + 1)) {
+          this.position += depth;
+          return [text, true];
+        }
+        else {
+          return ["", false];
+        }
+      }
+      else if (this.isTokenBreaker(depth)) {
+        return ["", false];
+      }
+      else {
+        text += this.document[this.position + depth];
+        depth++;
+      }
+      if (this.position + depth >= this.document.length) {
+        break;
+      }
+    }
+    return ["", false];
+  }
+
+  tryGetNull(): [string, boolean] {
+    if (this.document.slice(this.position, 4) === "null" && this.isTokenBreaker(4)){
+      this.position += 4;
+      return ["null", true];
+    }
+    return ["", false];
+  }
+
   scan(length: number): string {
     return this.document.slice(this.position, length);
   }
@@ -137,9 +175,10 @@ export function tokenize(document: string): TokenInfo[] {
   }
 
   let tokens = new TokenInfoContainer();
-  let insideString = false;
   let textContainer = new TextContainer();
   let iterator = new DocumentIterator(document);
+  let value = "";
+  let ok = false;
   while (true) {
     switch (iterator.getNext()) {
       case '{':
@@ -167,32 +206,28 @@ export function tokenize(document: string): TokenInfo[] {
         tokens.push(new TokenInfo(Token.Comma));
         break;
       case '"':
-        if (insideString) {
-          tokens.push(textContainer.endString());
-          insideString = false;
-        }
-        else if (iterator.isTokenBreaker(- 1)){
-          insideString = true;
+        [value, ok] = iterator.tryGetString();
+        if (ok) {
+          tokens.push(new TokenInfo(Token.String, value));
         }
         else {
           textContainer.push(iterator.getCurrent());
         }
         break;
       case " ":
-        tokens.push(textContainer.endFreeText());
-        break;
       case "\t":
       case "\n":
       case "\r":
         tokens.push(textContainer.endFreeText());
         break;
       case "n":
-        if (!insideString && iterator.isTokenBreaker(-1) && iterator.scan(4) === "null" && iterator.isTokenBreaker(4)){
-            tokens.push(new TokenInfo(Token.Null));
-            iterator.moveCursor(3);
-            break;
+        [value, ok] = iterator.tryGetNull();
+        if (ok) {
+          tokens.push(new TokenInfo(Token.Null));
         }
-        textContainer.push(iterator.getCurrent());
+        else {
+          textContainer.push(iterator.getCurrent());
+        }
         break;
       case "-":
       case "1":
