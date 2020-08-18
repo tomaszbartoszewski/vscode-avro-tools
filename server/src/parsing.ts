@@ -46,33 +46,6 @@ class TokenInfoContainer {
   }
 }
 
-class TextContainer {
-  text: string;
-
-  constructor(){
-    this.text = "";
-  }
-
-  push(char: string) {
-    this.text += char;
-  }
-
-  endString(): TokenInfo{
-    let result = new TokenInfo(Token.String, this.text);
-    this.text = "";
-    return result;
-  }
-
-  endFreeText(): TokenInfo | null {
-    if (this.text.length > 0) {
-      let result = new TokenInfo(Token.FreeText, this.text);
-      this.text = ""
-      return result;
-    }
-    return null
-  }
-}
-
 class DocumentIterator {
   document: string;
   position: number;
@@ -147,6 +120,22 @@ class DocumentIterator {
     return ["", false];
   }
 
+  getFreeText(): string {
+    let depth = 1;
+    let text = this.document[this.position];
+    while (this.position + depth < this.document.length) {
+      if (this.isTokenBreaker(depth)) {
+        break;
+      }
+      else {
+        text += this.document[this.position + depth];
+        depth++;
+      }
+    }
+    this.position += (depth - 1);
+    return text;
+  }
+
   scan(length: number): string {
     return this.document.slice(this.position, length);
   }
@@ -175,34 +164,27 @@ export function tokenize(document: string): TokenInfo[] {
   }
 
   let tokens = new TokenInfoContainer();
-  let textContainer = new TextContainer();
   let iterator = new DocumentIterator(document);
   let value = "";
   let ok = false;
   while (true) {
     switch (iterator.getNext()) {
       case '{':
-        tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.LeftBracket));
         break;
       case '}':
-        tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.RightBracket));
         break;
       case '[':
-        tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.LeftSquareBracket));
         break;
       case ']':
-        tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.RightSquareBracket));
         break;
       case ':':
-        tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.Colon));
         break;
       case ',':
-        tokens.push(textContainer.endFreeText());
         tokens.push(new TokenInfo(Token.Comma));
         break;
       case '"':
@@ -211,14 +193,13 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(new TokenInfo(Token.String, value));
         }
         else {
-          textContainer.push(iterator.getCurrent());
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
         }
         break;
       case " ":
       case "\t":
       case "\n":
       case "\r":
-        tokens.push(textContainer.endFreeText());
         break;
       case "n":
         [value, ok] = iterator.tryGetNull();
@@ -226,7 +207,7 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(new TokenInfo(Token.Null));
         }
         else {
-          textContainer.push(iterator.getCurrent());
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
         }
         break;
       case "-":
@@ -265,13 +246,12 @@ export function tokenize(document: string): TokenInfo[] {
             iterator.moveCursor(-numberDepth);
           }
         }
-        textContainer.push(iterator.getCurrent());
+        tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
         break;
       default:
-        textContainer.push(iterator.getCurrent());
+        tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
     }
     if (iterator.end()) {
-      tokens.push(textContainer.endFreeText());
       break;
     }
   }
