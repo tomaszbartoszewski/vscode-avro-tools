@@ -9,26 +9,32 @@ describe('Tokenize', () => {
 	it('should return left bracket', () => {
 		const result = tokenize('{');
 		assert.equal(result[0].token, Token.LeftBracket);
+		assert.equal(result[0].value, '{');
 	});
 	it('should return right bracket', () => {
 		const result = tokenize('}');
 		assert.equal(result[0].token, Token.RightBracket);
+		assert.equal(result[0].value, '}');
 	});
 	it('should return left square bracket', () => {
 		const result = tokenize('[');
 		assert.equal(result[0].token, Token.LeftSquareBracket);
+		assert.equal(result[0].value, '[');
 	});
 	it('should return right square bracket', () => {
 		const result = tokenize(']');
 		assert.equal(result[0].token, Token.RightSquareBracket);
+		assert.equal(result[0].value, ']');
 	});
 	it('should return colon', () => {
 		const result = tokenize(':');
 		assert.equal(result[0].token, Token.Colon);
+		assert.equal(result[0].value, ':');
 	});
 	it('should return comma', () => {
 		const result = tokenize(',');
 		assert.equal(result[0].token, Token.Comma);
+		assert.equal(result[0].value, ',');
 	});
 	it('should return string', () => {
 		const result = tokenize('"record"');
@@ -78,6 +84,7 @@ describe('Tokenize', () => {
 		nullDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result[0].token, Token.Null);
+			assert.equal(result[0].value, 'null');
 		});
 	});
 	it('should not return null', () => {

@@ -13,12 +13,12 @@ export enum Token {
 
 export class TokenInfo {
   token: Token;
-  value: string | null;
+  value: string;
   line: number;
   column: number;
   length: number;
 
-  constructor(token: Token, value: string | null = null) {
+  constructor(token: Token, value: string) {
     this.token = token;
     this.value = value;
     // line: number, column: number,
@@ -199,22 +199,22 @@ export function tokenize(document: string): TokenInfo[] {
   while (true) {
     switch (iterator.getNext()) {
       case '{':
-        tokens.push(new TokenInfo(Token.LeftBracket));
+        tokens.push(new TokenInfo(Token.LeftBracket, '{'));
         break;
       case '}':
-        tokens.push(new TokenInfo(Token.RightBracket));
+        tokens.push(new TokenInfo(Token.RightBracket, '}'));
         break;
       case '[':
-        tokens.push(new TokenInfo(Token.LeftSquareBracket));
+        tokens.push(new TokenInfo(Token.LeftSquareBracket, '['));
         break;
       case ']':
-        tokens.push(new TokenInfo(Token.RightSquareBracket));
+        tokens.push(new TokenInfo(Token.RightSquareBracket, ']'));
         break;
       case ':':
-        tokens.push(new TokenInfo(Token.Colon));
+        tokens.push(new TokenInfo(Token.Colon, ':'));
         break;
       case ',':
-        tokens.push(new TokenInfo(Token.Comma));
+        tokens.push(new TokenInfo(Token.Comma, ','));
         break;
       case '"':
         [value, ok] = iterator.tryGetString();
@@ -233,7 +233,7 @@ export function tokenize(document: string): TokenInfo[] {
       case "n":
         [value, ok] = iterator.tryGetNull();
         if (ok) {
-          tokens.push(new TokenInfo(Token.Null));
+          tokens.push(new TokenInfo(Token.Null, value));
         }
         else {
           tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
