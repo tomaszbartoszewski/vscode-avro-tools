@@ -14,17 +14,14 @@ export enum Token {
 export class TokenInfo {
   token: Token;
   value: string;
-  line: number;
-  column: number;
+  position: number;
   length: number;
 
-  constructor(token: Token, value: string) {
+  constructor(token: Token, value: string, position: number) {
     this.token = token;
     this.value = value;
-    // line: number, column: number,
-    this.line = 0;
-    this.column = 0;
-    this.length = 0;
+    this.position = position;
+    this.length = value.length;
   }
 }
 
@@ -49,37 +46,19 @@ class TokenInfoContainer {
 class DocumentIterator {
   document: string;
   position: number;
-  line: number;
-  column: number;
-  nextLine: number;
-  nextColumn: number;
+  tokenPosition: number;
 
   constructor(document: string) {
     this.document = document;
     this.position = -1;
-    this.line = 0;
-    this.column = -1;
-    this.nextLine = 0;
-    this.nextColumn = 0;
+    this.tokenPosition = 0;
   }
 
   getNext(): string {
-    this.line = this.nextLine;
-    this.column = this.nextColumn;
     this.position++;
+    this.tokenPosition = this.position;
     let value = this.document[this.position];
-    if (value === '\n') {
-      this.nextLine++;
-      this.nextColumn = 0;
-    }
-    else if (value !== '\r') {
-      this.nextColumn++;
-    }
     return value;
-  }
-
-  getCurrent(): string {
-    return this.document[this.position];
   }
 
   tryGetString(): [string, boolean] {
@@ -89,7 +68,6 @@ class DocumentIterator {
       if (this.document[this.position + depth] === "\""){
         if (this.isTokenBreaker(depth + 1)) {
           this.position += depth;
-          this.nextColumn += depth;
           return [text, true];
         }
         else {
@@ -111,9 +89,8 @@ class DocumentIterator {
   }
 
   tryGetNull(): [string, boolean] {
-    if (this.document.slice(this.position, 4) === "null" && this.isTokenBreaker(4)){
+    if (this.document.slice(this.position, this.position + 4) === "null" && this.isTokenBreaker(4)){
       this.position += 4;
-      this.nextColumn += 4;
       return ["null", true];
     }
     return ["", false];
@@ -132,7 +109,6 @@ class DocumentIterator {
       }
     }
     this.position += (depth - 1);
-    this.nextColumn += (depth - 1);
     return text;
   }
 
@@ -157,20 +133,11 @@ class DocumentIterator {
 
     if (isInt && numberText !== '-') {
       this.position += depth;
-      this.nextColumn += depth;
       return [numberText, true];
     }
     else {
       return ["", false];
     }
-  }
-
-  scan(length: number): string {
-    return this.document.slice(this.position, length);
-  }
-
-  moveCursor(length: number) {
-    this.position += length;
   }
 
   end(): boolean {
@@ -199,30 +166,30 @@ export function tokenize(document: string): TokenInfo[] {
   while (true) {
     switch (iterator.getNext()) {
       case '{':
-        tokens.push(new TokenInfo(Token.LeftBracket, '{'));
+        tokens.push(new TokenInfo(Token.LeftBracket, '{', iterator.tokenPosition));
         break;
       case '}':
-        tokens.push(new TokenInfo(Token.RightBracket, '}'));
+        tokens.push(new TokenInfo(Token.RightBracket, '}', iterator.tokenPosition));
         break;
       case '[':
-        tokens.push(new TokenInfo(Token.LeftSquareBracket, '['));
+        tokens.push(new TokenInfo(Token.LeftSquareBracket, '[', iterator.tokenPosition));
         break;
       case ']':
-        tokens.push(new TokenInfo(Token.RightSquareBracket, ']'));
+        tokens.push(new TokenInfo(Token.RightSquareBracket, ']', iterator.tokenPosition));
         break;
       case ':':
-        tokens.push(new TokenInfo(Token.Colon, ':'));
+        tokens.push(new TokenInfo(Token.Colon, ':', iterator.tokenPosition));
         break;
       case ',':
-        tokens.push(new TokenInfo(Token.Comma, ','));
+        tokens.push(new TokenInfo(Token.Comma, ',', iterator.tokenPosition));
         break;
       case '"':
         [value, ok] = iterator.tryGetString();
         if (ok) {
-          tokens.push(new TokenInfo(Token.String, value));
+          tokens.push(new TokenInfo(Token.String, value, iterator.tokenPosition));
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       case " ":
@@ -233,10 +200,10 @@ export function tokenize(document: string): TokenInfo[] {
       case "n":
         [value, ok] = iterator.tryGetNull();
         if (ok) {
-          tokens.push(new TokenInfo(Token.Null, value));
+          tokens.push(new TokenInfo(Token.Null, value, iterator.tokenPosition));
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       case "-":
@@ -251,14 +218,14 @@ export function tokenize(document: string): TokenInfo[] {
       case "9":
         [value, ok] = iterator.tryGetNumber();
         if (ok) {
-          tokens.push(new TokenInfo(Token.Integer, value));
+          tokens.push(new TokenInfo(Token.Integer, value, iterator.tokenPosition));
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       default:
-        tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
+        tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
     }
     if (iterator.end()) {
       break;

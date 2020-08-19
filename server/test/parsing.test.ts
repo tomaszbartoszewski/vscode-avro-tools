@@ -133,4 +133,20 @@ describe('Tokenize', () => {
 		assert.equal(result[0].token, Token.FreeText);
 		assert.equal(result[0].value, "test123");
 	});
+	it('should return position and length', () => {
+		const result = tokenize('unknown\n  test');
+		assert.equal(result[0].position, 0);
+		assert.equal(result[0].length, 7);
+		assert.equal(result[1].position, 10);
+		assert.equal(result[1].length, 4);
+	});
+	it('should return null after other token', () => {
+		let nullDocuments = [':   null ', '\tnull', '\nnull', '}null', ']null', '{null', '[null', ',null'];
+		nullDocuments.forEach(function (document) {
+			const result = tokenize(document);
+			let tokenInfo = result[result.length - 1];
+			assert.equal(tokenInfo.token, Token.Null);
+			assert.equal(tokenInfo.value, 'null');
+		});
+	});
 });

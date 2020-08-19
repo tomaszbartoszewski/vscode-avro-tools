@@ -10,12 +10,16 @@ import {
   CompletionItemKind,
   TextDocumentPositionParams,
   TextDocumentSyncKind,
-  InitializeResult
+  InitializeResult,
+  Position, 
+  Range
 } from 'vscode-languageserver';
 
 import {
   TextDocument
 } from 'vscode-languageserver-textdocument';
+import {tokenize, Token} from './parsing';
+// import {  } from 'vscode';
 
 // Create a connection for the server, using Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
@@ -136,42 +140,80 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   // The validator creates diagnostics for all uppercase words length 2 and more
   let text = textDocument.getText();
+  let tokens = tokenize(text);
   let pattern = /\b[A-Z]{2,}\b/g;
   let m: RegExpExecArray | null;
 
   let problems = 0;
   let diagnostics: Diagnostic[] = [];
-  while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
-    problems++;
-    let diagnostic: Diagnostic = {
-      severity: DiagnosticSeverity.Warning,
-      range: {
-        start: textDocument.positionAt(m.index),
-        end: textDocument.positionAt(m.index + m[0].length)
-      },
-      message: `${m[0]} is all uppercase.`,
-      source: 'ex'
-    };
-    if (hasDiagnosticRelatedInformationCapability) {
-      diagnostic.relatedInformation = [
-        {
-          location: {
-            uri: textDocument.uri,
-            range: Object.assign({}, diagnostic.range)
-          },
-          message: 'Spelling matters'
+
+  tokens.forEach(function(tokenInfo) {
+    if (tokenInfo.token === Token.FreeText) {
+      problems++;
+      let diagnostic: Diagnostic = {
+        severity: DiagnosticSeverity.Error,
+        range: {
+          start: textDocument.positionAt(tokenInfo.position),
+          end: textDocument.positionAt(tokenInfo.position + tokenInfo.length)
         },
-        {
-          location: {
-            uri: textDocument.uri,
-            range: Object.assign({}, diagnostic.range)
-          },
-          message: 'Particularly for names'
-        }
-      ];
+        message: `Wrong`,
+        source: 'ex'
+      };
+      diagnostics.push(diagnostic);
     }
-    diagnostics.push(diagnostic);
-  }
+  });
+
+  // try {
+  //   let content = JSON.parse(text);
+  //   if (content.type === "null" && content.default !== null) {
+  //     problems++;
+  //     let diagnostic: Diagnostic = {
+  //       severity: DiagnosticSeverity.Error,
+  //       range: {
+  //         start: textDocument.positionAt(0),
+  //         end: textDocument.positionAt(text.length)
+  //       },
+  //       message: `Default for type null can only be null`,
+  //       source: 'ex'
+  //     };
+  //     diagnostics.push(diagnostic);
+  //   }
+
+  // } catch(e) {
+    
+  // }
+
+  // while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
+  //   problems++;
+  //   let diagnostic: Diagnostic = {
+  //     severity: DiagnosticSeverity.Warning,
+  //     range: {
+  //       start: textDocument.positionAt(m.index),
+  //       end: textDocument.positionAt(m.index + m[0].length)
+  //     },
+  //     message: `${m[0]} is all uppercase.`,
+  //     source: 'ex'
+  //   };
+  //   if (hasDiagnosticRelatedInformationCapability) {
+  //     diagnostic.relatedInformation = [
+  //       {
+  //         location: {
+  //           uri: textDocument.uri,
+  //           range: Object.assign({}, diagnostic.range)
+  //         },
+  //         message: 'Spelling matters'
+  //       },
+  //       {
+  //         location: {
+  //           uri: textDocument.uri,
+  //           range: Object.assign({}, diagnostic.range)
+  //         },
+  //         message: 'Particularly for names'
+  //       }
+  //     ];
+  //   }
+  //   diagnostics.push(diagnostic);
+  // }
 
   // Send the computed diagnostics to VSCode.
   connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
@@ -186,6 +228,9 @@ connection.onDidChangeWatchedFiles(_change => {
 connection.onCompletion(
   (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
     let _doc = documents.get(_textDocumentPosition.textDocument.uri)
+    let text = _doc?.getText()
+    let t = _doc?.getText(Range.create(Position.create(_textDocumentPosition.position.line, 0), _textDocumentPosition.position));
+
     return [
       {
         label: 'String',
@@ -195,7 +240,7 @@ connection.onCompletion(
       },
       {
         label: 'Copy doc',
-        insertText: _doc?.getText(),
+        insertText: _doc?.getText()[0],
         kind: CompletionItemKind.Text,
         data: 2
       }
