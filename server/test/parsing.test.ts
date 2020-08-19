@@ -39,21 +39,21 @@ describe('Tokenize', () => {
 	it('should return string', () => {
 		const result = tokenize('"record"');
 		assert.equal(result[0].token, Token.String);
-		assert.equal(result[0].value, "record");
+		assert.equal(result[0].value, '"record"');
 	});
 	it('should return tokenized object', () => {
 		const result = tokenize('{"type":"string"}');
 		let tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon, Token.String, Token.RightBracket]);
-		assert.equal(result[1].value, "type");
-		assert.equal(result[3].value, "string");
+		assert.equal(result[1].value, '"type"');
+		assert.equal(result[3].value, '"string"');
 	});
 	it('should return tokenized object ignore space, tab, new line', () => {
 		const result = tokenize('{\n\r"type"  :\t  "string"  \n}');
 		let tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon, Token.String, Token.RightBracket]);
-		assert.equal(result[1].value, "type");
-		assert.equal(result[3].value, "string");
+		assert.equal(result[1].value, '"type"');
+		assert.equal(result[3].value, '"string"');
 	});
 	it('should return tokenized record ignore space, tab, new line', () => {
 		let document =
@@ -76,8 +76,8 @@ describe('Tokenize', () => {
 		const result = tokenize('["a", "b"]');
 		let tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftSquareBracket, Token.String, Token.Comma, Token.String, Token.RightSquareBracket]);
-		assert.equal(result[1].value, "a");
-		assert.equal(result[3].value, "b");
+		assert.equal(result[1].value, '"a"');
+		assert.equal(result[3].value, '"b"');
 	});
 	it('should return null', () => {
 		let nullDocuments = ['null', 'null ', 'null\t', 'null\n', 'null}', 'null]', 'null{', 'null[', 'null,'];
@@ -148,5 +148,12 @@ describe('Tokenize', () => {
 			assert.equal(tokenInfo.token, Token.Null);
 			assert.equal(tokenInfo.value, 'null');
 		});
+	});
+	it('should return string position and length including quotes', () => {
+		const result = tokenize('"unknown" "test"');
+		assert.equal(result[0].position, 0);
+		assert.equal(result[0].length, 9);
+		assert.equal(result[1].position, 10);
+		assert.equal(result[1].length, 6);
 	});
 });

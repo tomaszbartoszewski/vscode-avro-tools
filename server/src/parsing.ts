@@ -63,10 +63,11 @@ class DocumentIterator {
 
   tryGetString(): [string, boolean] {
     let depth = 1;
-    let text = "";
+    let text = '"';
     while (true) {
-      if (this.document[this.position + depth] === "\""){
+      if (this.document[this.position + depth] === '"'){
         if (this.isTokenBreaker(depth + 1)) {
+          text += '"';
           this.position += depth;
           return [text, true];
         }
