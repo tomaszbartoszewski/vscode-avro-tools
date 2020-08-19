@@ -83,15 +83,13 @@ class DocumentIterator {
   }
 
   tryGetString(): [string, boolean] {
-    if (!this.isTokenBreaker(-1)) {
-      return ["", false];
-    }
     let depth = 1;
     let text = "";
     while (true) {
       if (this.document[this.position + depth] === "\""){
         if (this.isTokenBreaker(depth + 1)) {
           this.position += depth;
+          this.nextColumn += depth;
           return [text, true];
         }
         else {
@@ -115,6 +113,7 @@ class DocumentIterator {
   tryGetNull(): [string, boolean] {
     if (this.document.slice(this.position, 4) === "null" && this.isTokenBreaker(4)){
       this.position += 4;
+      this.nextColumn += 4;
       return ["null", true];
     }
     return ["", false];
@@ -133,7 +132,37 @@ class DocumentIterator {
       }
     }
     this.position += (depth - 1);
+    this.nextColumn += (depth - 1);
     return text;
+  }
+
+  tryGetNumber(): [string, boolean] {
+    let numberText = this.document[this.position];
+    let depth = 1;
+    let isInt = true;
+    while (true) {
+      if (this.isTokenBreaker(depth)) {
+        break;
+      }
+      let nextValue = this.document[this.position + depth];
+      if (nextValue.charCodeAt(0) >= 48 && nextValue.charCodeAt(0) <= 57){
+        numberText += nextValue;
+        depth++;
+      }
+      else {
+        isInt = false;
+        break;
+      }
+    }
+
+    if (isInt && numberText !== '-') {
+      this.position += depth;
+      this.nextColumn += depth;
+      return [numberText, true];
+    }
+    else {
+      return ["", false];
+    }
   }
 
   scan(length: number): string {
@@ -220,33 +249,13 @@ export function tokenize(document: string): TokenInfo[] {
       case "7":
       case "8":
       case "9":
-        if (iterator.isTokenBreaker(-1)) {
-          let numberText = iterator.getCurrent();
-          let numberDepth = 1;
-          let isInt = true;
-          while (true) {
-            if (iterator.isTokenBreaker(1)) {
-              break;
-            }
-            let nextValue = iterator.getNext();
-            if (nextValue.charCodeAt(0) >= 48 && nextValue.charCodeAt(0) <= 57){
-              numberText += nextValue;
-              numberDepth++;
-            }
-            else {
-              isInt = false;
-              break;
-            }
-          }
-          if (isInt && numberText !== '-') {
-            tokens.push(new TokenInfo(Token.Integer, numberText));
-            break;
-          }
-          else {
-            iterator.moveCursor(-numberDepth);
-          }
+        [value, ok] = iterator.tryGetNumber();
+        if (ok) {
+          tokens.push(new TokenInfo(Token.Integer, value));
         }
-        tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
+        else {
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
+        }
         break;
       default:
         tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText()));
