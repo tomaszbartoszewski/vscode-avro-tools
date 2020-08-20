@@ -8,6 +8,7 @@ class TokenContainer {
 
 	constructor() {
 		this.tokens = [];
+		this.position = 0;
 	}
 
 	addLeftBracket(): TokenContainer {
@@ -31,6 +32,12 @@ class TokenContainer {
 	addString(value: string): TokenContainer {
 		this.tokens.push(new TokenInfo(Token.String, value, this.position))
 		this.position += value.length;
+		return this;
+	}
+
+	addComma(): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.Comma, ',', this.position))
+		this.position++;
 		return this;
 	}
 
@@ -104,7 +111,7 @@ describe('Build Tree', () => {
 		const result = buildTree(tokens);
 		assert.equal(result.leftBracket, null);
 	});
-	it('should return key without value', () => {
+	it('should return child without value', () => {
 		var tokens = new TokenContainer()
 			.addLeftBracket()
 				.addString('"type"').addColon()
@@ -115,7 +122,7 @@ describe('Build Tree', () => {
 		assert.equal(result.colon, tokens[2]);
 		assert.equal(result.value, null);
 	});
-	it('should return key without colon', () => {
+	it('should return child without colon', () => {
 		var tokens = new TokenContainer()
 			.addLeftBracket()
 				.addString('"type"').addString('"int"')
@@ -126,7 +133,7 @@ describe('Build Tree', () => {
 		assert.equal(result.colon, null);
 		assert.equal(result.value, tokens[2]);
 	});
-	it('should return key without key', () => {
+	it('should return child without key', () => {
 		var tokens = new TokenContainer()
 			.addLeftBracket()
 				.addColon().addString('"int"')
@@ -136,5 +143,39 @@ describe('Build Tree', () => {
 		assert.equal(result.key, null);
 		assert.equal(result.colon, tokens[1]);
 		assert.equal(result.value, tokens[2]);
+	});
+	it('should return two children separated by comma', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addString('"int"').addComma()
+				.addString('"doc"').addColon().addString('"test"')
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.children.length, 2);
+		var keyValueOne = result.children[0];
+		assert.equal(keyValueOne.key, tokens[1]);
+		assert.equal(keyValueOne.colon, tokens[2]);
+		assert.equal(keyValueOne.value, tokens[3]);
+		assert.equal(keyValueOne.comma, tokens[4]);
+		var keyValueTwo = result.children[1];
+		assert.equal(keyValueTwo.key, tokens[5]);
+		assert.equal(keyValueTwo.colon, tokens[6]);
+		assert.equal(keyValueTwo.value, tokens[7]);
+		assert.equal(keyValueTwo.comma, null);
+	});
+	it('should return three children with comma', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addComma()
+				.addComma()
+				.addComma()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.children.length, 3);
+		assert.equal(result.children[0].comma, tokens[1]);
+		assert.equal(result.children[1].comma, tokens[2]);
+		assert.equal(result.children[2].comma, tokens[3]);
 	});
 });

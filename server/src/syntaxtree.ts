@@ -28,11 +28,14 @@ class KeyValuePair {
 	key: TokenInfo | null;
 	colon: TokenInfo | null;
 	value: TokenInfo | Node | null;
+	comma: TokenInfo | null;
+
 
 	constructor() {
 		this.key = null;
 		this.colon = null;
 		this.value = null;
+		this.comma = null;
 	}
 
 	setKey(key: TokenInfo) {
@@ -45,6 +48,10 @@ class KeyValuePair {
 
 	setValue(value: TokenInfo | Node) {
 		this.value = value;
+	}
+
+	setComma(value: TokenInfo) {
+		this.comma = value;
 	}
 }
 
@@ -73,11 +80,11 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 			break;
 		}
 		var keyValuePair = new KeyValuePair();
-		if (tokens[position].token === Token.String) {
+		if (position < tokens.length && tokens[position].token === Token.String) {
 			keyValuePair.setKey(tokens[position]);
 			position++;
 		}
-		if (tokens[position].token === Token.Colon){
+		if (position < tokens.length && tokens[position].token === Token.Colon){
 			keyValuePair.setColon(tokens[position]);
 			position++;
 		}
@@ -86,6 +93,11 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 			keyValuePair.setValue(value);
 		}
 		position += move;
+		if (position < tokens.length && tokens[position].token === Token.Comma){
+			// console.log(tokens.slice(position))
+			keyValuePair.setComma(tokens[position]);
+			position++;
+		}
 		node.addChild(keyValuePair);
 	}
 	return [node, position];
