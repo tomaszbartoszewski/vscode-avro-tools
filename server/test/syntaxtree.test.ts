@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {buildTree} from '../src/syntaxtree';
+import {buildTree, ArrayNode, ArrayItem} from '../src/syntaxtree';
 import { TokenInfo, Token } from '../src/parsing';
 
 class TokenContainer {
@@ -37,6 +37,18 @@ class TokenContainer {
 
 	addComma(): TokenContainer {
 		this.tokens.push(new TokenInfo(Token.Comma, ',', this.position))
+		this.position++;
+		return this;
+	}
+
+	addLeftSquareBracket(): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.LeftSquareBracket, '[', this.position))
+		this.position++;
+		return this;
+	}
+
+	addRightSquareBracket(): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.RightSquareBracket, ']', this.position))
 		this.position++;
 		return this;
 	}
@@ -177,5 +189,32 @@ describe('Build Tree', () => {
 		assert.equal(result.children[0].comma, tokens[1]);
 		assert.equal(result.children[1].comma, tokens[2]);
 		assert.equal(result.children[2].comma, tokens[3]);
+	});
+	it('should return child with array value', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addLeftSquareBracket()
+					.addString('"null"').addComma()
+					.addString('"int"')
+				.addRightSquareBracket()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.leftBracket, tokens[0]);
+		assert.equal(result.children.length, 1);
+		var keyValue = result.children[0];
+		assert.equal(keyValue.key, tokens[1]);
+		assert.equal(keyValue.colon, tokens[2]);
+		var array = keyValue.value as ArrayNode;
+		assert.equal(array.leftBracket, tokens[3]);
+		assert.equal(array.children.length, 2);
+		var arrayItem = array.children[0] as ArrayItem;
+		assert.equal(arrayItem.value, tokens[4]);
+		assert.equal(arrayItem.comma, tokens[5]);
+		var arrayItem = array.children[1] as ArrayItem;
+		assert.equal(arrayItem.value, tokens[6]);
+		assert.equal(array.rightBracket, tokens[7]);
+		assert.equal(keyValue.comma, null);
+		assert.equal(result.rightBracket, tokens[8]);
 	});
 });
