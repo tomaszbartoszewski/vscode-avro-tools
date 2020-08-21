@@ -131,9 +131,8 @@ class DocumentIterator {
         break;
       }
     }
-
     if (isInt && numberText !== '-') {
-      this.position += depth;
+      this.position += (depth - 1);
       return [numberText, true];
     }
     else {

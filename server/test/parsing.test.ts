@@ -156,4 +156,12 @@ describe('Tokenize', () => {
 		assert.equal(result[1].position, 10);
 		assert.equal(result[1].length, 6);
 	});
+	it('should return commas after integers', () => {
+		const result = tokenize('{"a": [1,2,3]}');
+		let tokens = result.map(({token}) => token);
+		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon,
+			Token.LeftSquareBracket, Token.Integer, Token.Comma,
+			Token.Integer, Token.Comma, Token.Integer,
+			Token.RightSquareBracket, Token.RightBracket]);
+	});
 });

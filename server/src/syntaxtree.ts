@@ -24,12 +24,11 @@ export class Node {
 	}
 }
 
-class KeyValuePair {
+export class KeyValuePair {
 	key: TokenInfo | null;
 	colon: TokenInfo | null;
 	value: TokenInfo | Node | ArrayNode | null;
 	comma: TokenInfo | null;
-
 
 	constructor() {
 		this.key = null;
@@ -96,9 +95,6 @@ export class ArrayItem {
 		this.comma = value;
 	}
 }
-
-
-
 
 export function buildTree(tokens: TokenInfo[]): Node {
 	if (tokens.length === 0) {
