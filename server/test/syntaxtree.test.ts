@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {buildTree, ArrayNode, ArrayItem} from '../src/syntaxtree';
+import {buildTree, ArrayNode, ArrayItem, Node} from '../src/syntaxtree';
 import { TokenInfo, Token } from '../src/parsing';
 
 class TokenContainer {
@@ -216,5 +216,24 @@ describe('Build Tree', () => {
 		assert.equal(array.rightBracket, tokens[7]);
 		assert.equal(keyValue.comma, null);
 		assert.equal(result.rightBracket, tokens[8]);
+	});
+	it('should return node inside a node', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addLeftBracket()
+					.addString('"type"').addColon().addString('"int"')
+				.addRightBracket()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.children.length, 1);
+		var innerNode = result.children[0].value as Node;
+		assert.equal(innerNode.leftBracket, tokens[3]);
+		assert.equal(innerNode.children.length, 1);
+		var keyValue = innerNode.children[0];
+		assert.equal(keyValue.key, tokens[4]);
+		assert.equal(keyValue.colon, tokens[5]);
+		assert.equal(keyValue.value, tokens[6]);
+		assert.equal(innerNode.rightBracket, tokens[7]);
 	});
 });

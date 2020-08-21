@@ -1,6 +1,6 @@
 import { TokenInfo, Token } from './parsing';
 
-class Node {
+export class Node {
 	leftBracket: TokenInfo | null;
 	children: KeyValuePair[];
 	rightBracket: TokenInfo | null;
@@ -138,6 +138,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 			position++;
 			movedForward = true;
 		}
+		console.log("getNode, entering getValue", tokens.slice(position));
 		var [value, move] = getValue(tokens.slice(position))
 		if (value !== null) {
 			keyValuePair.setValue(value);
@@ -161,10 +162,10 @@ function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, nu
 	// console.log(tokens);
 	var position = 0;
 	var result: TokenInfo | Node | ArrayNode | null = null;
-	if ([Token.String, Token.Integer].includes(tokens[0].token)) {
-		return [tokens[0], 1];
+	if ([Token.String, Token.Integer].includes(tokens[position].token)) {
+		return [tokens[position], 1];
 	}
-	else if (tokens[0].token === Token.LeftSquareBracket) {
+	else if (tokens[position].token === Token.LeftSquareBracket) {
 		result = new ArrayNode();
 		result.setLeftBracket(tokens[position]);
 		position++;
@@ -198,9 +199,18 @@ function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, nu
 				result.addChild(arrayItem);
 			}
 		}
+		return [result, position];
 	}
+	else if (tokens[position].token === Token.LeftBracket) {
+		console.log("getValue, entering getNode", tokens.slice(position));
+		var [node, newPosition] = getNode(tokens);
+		if (newPosition > 0) {
+			return [node, newPosition];
+		}
+	}
+	
 
-	return [result, position];
+	return [null, 0];
 }
 
 export default buildTree;
