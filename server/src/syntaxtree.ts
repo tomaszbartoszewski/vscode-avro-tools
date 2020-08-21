@@ -159,66 +159,68 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 }
 
 function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, number] {
-	// console.log(tokens);
 	var position = 0;
-	var result: TokenInfo | Node | ArrayNode | null = null;
 	if ([Token.String, Token.Integer].includes(tokens[position].token)) {
 		return [tokens[position], 1];
 	}
 	else if (tokens[position].token === Token.LeftSquareBracket) {
-		result = new ArrayNode();
-		result.setLeftBracket(tokens[position]);
-		position++;
-		var movedForward = true;
-		while (position < tokens.length && movedForward) {
-			movedForward = false;
-			console.log("getValue, array loop", tokens.slice(position));
-			if (tokens[position].token === Token.RightSquareBracket) {
-				result.setRightBracket(tokens[position]);
-				position++;
-				return [result, position];
-			}
-			var arrayItem = new ArrayItem();
-			if (position < tokens.length && tokens[position].token === Token.LeftBracket) {
-				var [node, move] = getNode(tokens.slice(position));
-				if (move > 0) {
-					arrayItem.setValue(node);
-					position += move;
-					movedForward = true;
-				}
-			}
-			else if (position < tokens.length && tokens[position].token !== Token.Comma) {
-				arrayItem.setValue(tokens[position]);
-				position++;
-				movedForward = true;
-			}
-			if (position < tokens.length && tokens[position].token === Token.Comma){
-				arrayItem.setComma(tokens[position]);
-				position++;
-				movedForward = true;
-			}
-			// var [value, move] = getValue(tokens.slice(position))
-			// if (value !== null) {
-			// 	keyValuePair.setValue(value);
-			// 	movedForward = true;
-			// }
-			// position += move;
-			if (movedForward) {
-				result.addChild(arrayItem);
-			}
-		}
-		return [result, position];
+		console.log("getValue, entering getArray", tokens.slice(position));
+		return getArray(tokens);
 	}
 	else if (tokens[position].token === Token.LeftBracket) {
 		console.log("getValue, entering getNode", tokens.slice(position));
-		var [node, move] = getNode(tokens);
-		if (move > 0) {
-			return [node, move];
-		}
+		return getNode(tokens);
 	}
-	
 
 	return [null, 0];
+}
+
+function getArray(tokens: TokenInfo[]): [ArrayNode, number] {
+	var position = 0;
+	var result = new ArrayNode();
+	if (tokens[position].token === Token.LeftSquareBracket) {
+		result.setLeftBracket(tokens[position]);
+		position++;
+	}
+	var movedForward = true;
+	while (position < tokens.length && movedForward) {
+		movedForward = false;
+		console.log("getArray, items loop", tokens.slice(position));
+		if (tokens[position].token === Token.RightSquareBracket) {
+			result.setRightBracket(tokens[position]);
+			position++;
+			return [result, position];
+		}
+		var arrayItem = new ArrayItem();
+		if (position < tokens.length && tokens[position].token === Token.LeftBracket) {
+			var [node, move] = getNode(tokens.slice(position));
+			if (move > 0) {
+				arrayItem.setValue(node);
+				position += move;
+				movedForward = true;
+			}
+		}
+		else if (position < tokens.length && tokens[position].token !== Token.Comma) {
+			arrayItem.setValue(tokens[position]);
+			position++;
+			movedForward = true;
+		}
+		if (position < tokens.length && tokens[position].token === Token.Comma){
+			arrayItem.setComma(tokens[position]);
+			position++;
+			movedForward = true;
+		}
+		// var [value, move] = getValue(tokens.slice(position))
+		// if (value !== null) {
+		// 	keyValuePair.setValue(value);
+		// 	movedForward = true;
+		// }
+		// position += move;
+		if (movedForward) {
+			result.addChild(arrayItem);
+		}
+	}
+	return [result, position];
 }
 
 export default buildTree;

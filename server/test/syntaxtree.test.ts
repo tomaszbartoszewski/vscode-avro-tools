@@ -252,7 +252,7 @@ describe('Build Tree', () => {
 		assert.equal(arrayNode.children.length, 1);
 		assert.equal(arrayNode.children[0].value instanceof Node, true);
 	});
-	it('should return node inside an array missing record closing bracket', () => {
+	it('should return node inside an array, missing record closing bracket', () => {
 		var tokens = new TokenContainer()
 			.addLeftBracket()
 				.addString('"type"').addColon().addLeftSquareBracket()
