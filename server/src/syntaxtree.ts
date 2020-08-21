@@ -179,7 +179,15 @@ function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, nu
 				return [result, position];
 			}
 			var arrayItem = new ArrayItem();
-			if (position < tokens.length && tokens[position].token !== Token.Comma) {
+			if (position < tokens.length && tokens[position].token === Token.LeftBracket) {
+				var [node, move] = getNode(tokens.slice(position));
+				if (move > 0) {
+					arrayItem.setValue(node);
+					position += move;
+					movedForward = true;
+				}
+			}
+			else if (position < tokens.length && tokens[position].token !== Token.Comma) {
 				arrayItem.setValue(tokens[position]);
 				position++;
 				movedForward = true;
@@ -203,9 +211,9 @@ function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, nu
 	}
 	else if (tokens[position].token === Token.LeftBracket) {
 		console.log("getValue, entering getNode", tokens.slice(position));
-		var [node, newPosition] = getNode(tokens);
-		if (newPosition > 0) {
-			return [node, newPosition];
+		var [node, move] = getNode(tokens);
+		if (move > 0) {
+			return [node, move];
 		}
 	}
 	

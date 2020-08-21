@@ -236,4 +236,35 @@ describe('Build Tree', () => {
 		assert.equal(keyValue.value, tokens[6]);
 		assert.equal(innerNode.rightBracket, tokens[7]);
 	});
+	it('should return node inside an array', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addLeftSquareBracket()
+					.addLeftBracket()
+						.addString('"name"').addColon().addString('"Test"')
+					.addRightBracket()
+				.addRightSquareBracket()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.children.length, 1);
+		var arrayNode = result.children[0].value as ArrayNode;
+		assert.equal(arrayNode.children.length, 1);
+		assert.equal(arrayNode.children[0].value instanceof Node, true);
+	});
+	it('should return node inside an array missing record closing bracket', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addLeftSquareBracket()
+					.addLeftBracket()
+						.addString('"name"').addColon().addString('"Test"')
+				.addRightSquareBracket()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.children.length, 1);
+		var arrayNode = result.children[0].value as ArrayNode;
+		assert.equal(arrayNode.children.length, 1);
+		assert.equal(arrayNode.children[0].value instanceof Node, true);
+	});
 });
