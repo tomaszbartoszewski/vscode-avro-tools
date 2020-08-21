@@ -22,9 +22,9 @@ Parser doesn't handle floats, true and false.
 
 Syntax tree only understands root node with fields. Field values must be primitives or array.
 
-* Nesting nodes inside nodes is not supported
-* Nesting nodes inside array is not supported
-* Nesting array inside array is not supported
+* Nesting nodes inside nodes is not supported (Done, at least optimistic scenario)
+* Nesting nodes inside array is not supported (Done, at least optimistic scenario)
+* Nesting array inside array is not supported (Done, at least optimistic scenario)
 * Tolerance to invalid syntax is very low
 
 ## Planned Features

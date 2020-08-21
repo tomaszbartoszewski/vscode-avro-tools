@@ -267,4 +267,20 @@ describe('Build Tree', () => {
 		assert.equal(arrayNode.children.length, 1);
 		assert.equal(arrayNode.children[0].value instanceof Node, true);
 	});
+	it('should return an array inside an array', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addLeftSquareBracket()
+					.addLeftSquareBracket()
+						.addString('"name"')
+					.addRightSquareBracket()
+				.addRightSquareBracket()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens);
+		assert.equal(result.children.length, 1);
+		var arrayNode = result.children[0].value as ArrayNode;
+		assert.equal(arrayNode.children.length, 1);
+		assert.equal(arrayNode.children[0].value instanceof ArrayNode, true);
+	});
 });

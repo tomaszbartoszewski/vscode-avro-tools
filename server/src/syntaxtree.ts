@@ -80,7 +80,7 @@ export class ArrayNode {
 }
 
 export class ArrayItem {
-	value: TokenInfo | Node | null;
+	value: TokenInfo | Node | ArrayNode | null;
 	comma: TokenInfo | null;
 
 	constructor() {
@@ -88,7 +88,7 @@ export class ArrayItem {
 		this.comma = null;
 	}
 
-	setValue(value: TokenInfo | Node) {
+	setValue(value: TokenInfo | Node | ArrayNode) {
 		this.value = value;
 	}
 
@@ -192,17 +192,10 @@ function getArray(tokens: TokenInfo[]): [ArrayNode, number] {
 			return [result, position];
 		}
 		var arrayItem = new ArrayItem();
-		if (position < tokens.length && tokens[position].token === Token.LeftBracket) {
-			var [node, move] = getNode(tokens.slice(position));
-			if (move > 0) {
-				arrayItem.setValue(node);
-				position += move;
-				movedForward = true;
-			}
-		}
-		else if (position < tokens.length && tokens[position].token !== Token.Comma) {
-			arrayItem.setValue(tokens[position]);
-			position++;
+		var [value, move] = getValue(tokens.slice(position));
+		if (value !== null) {
+			arrayItem.setValue(value);
+			position += move;
 			movedForward = true;
 		}
 		if (position < tokens.length && tokens[position].token === Token.Comma){
@@ -210,12 +203,6 @@ function getArray(tokens: TokenInfo[]): [ArrayNode, number] {
 			position++;
 			movedForward = true;
 		}
-		// var [value, move] = getValue(tokens.slice(position))
-		// if (value !== null) {
-		// 	keyValuePair.setValue(value);
-		// 	movedForward = true;
-		// }
-		// position += move;
 		if (movedForward) {
 			result.addChild(arrayItem);
 		}
