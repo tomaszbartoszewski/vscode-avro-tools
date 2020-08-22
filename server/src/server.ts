@@ -19,6 +19,8 @@ import {
   TextDocument
 } from 'vscode-languageserver-textdocument';
 import {tokenize, Token} from './parsing';
+import buildTree from './syntaxtree';
+import { Validator, ExpectedAttributesValidator, ValidationSeverity } from './validation/validators';
 // import {  } from 'vscode';
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -140,12 +142,50 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
   // The validator creates diagnostics for all uppercase words length 2 and more
   let text = textDocument.getText();
+  console.time('tokenize');
   let tokens = tokenize(text);
+  console.timeEnd('tokenize');
+  console.time('buildTree');
+  const tree = buildTree(tokens);
+  console.timeEnd('buildTree');
+  // console.log(tree);
   let pattern = /\b[A-Z]{2,}\b/g;
   let m: RegExpExecArray | null;
 
   let problems = 0;
   let diagnostics: Diagnostic[] = [];
+
+  const validator: Validator = new ExpectedAttributesValidator();
+  const iter = validator.validate(tree);
+  iter.forEach((value) => {
+    problems++;
+    let diagnostic: Diagnostic = {
+      severity: (value.severity === ValidationSeverity.Error) ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
+      range: {
+        start: textDocument.positionAt(value.start),
+        end: textDocument.positionAt(value.end)
+      },
+      message: value.message,
+      source: 'ex'
+    };
+    diagnostics.push(diagnostic);
+  });
+
+  // let curr = iter.next();
+  // while (!curr.done) {
+  //   problems++;
+  //   let diagnostic: Diagnostic = {
+  //     severity: (curr.value.severity === ValidationSeverity.Error) ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
+  //     range: {
+  //       start: textDocument.positionAt(curr.value.start),
+  //       end: textDocument.positionAt(curr.value.end)
+  //     },
+  //     message: curr.value.message,
+  //     source: 'ex'
+  //   };
+  //   diagnostics.push(diagnostic);
+  // }
+  // assert.equal(curr.done, false);
 
   tokens.forEach(function(tokenInfo) {
     if (tokenInfo.token === Token.FreeText) {

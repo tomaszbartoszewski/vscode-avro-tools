@@ -1,0 +1,82 @@
+import { Tree } from '../syntaxtree';
+import { Token, TokenInfo } from '../parsing';
+
+export enum ValidationSeverity {
+	Error,
+	Warning
+}
+
+export class ValidationMessage {
+	severity: ValidationSeverity
+	start: number
+	end: number
+	message: string
+
+	constructor(severity: ValidationSeverity, start: number, end: number, message: string) {
+		this.severity = severity;
+		this.start = start;
+		this.end = end;
+		this.message = message;
+	}
+}
+
+export interface Validator {
+	// validate(tree: Tree): Generator<ValidationMessage, string, boolean>;
+	validate(tree: Tree): ValidationMessage[];
+
+}
+
+export class ExpectedAttributesValidator implements Validator {
+	// For some reason using this method is crashing the server
+	// *validate(tree: Tree): Generator<ValidationMessage, string, boolean> {
+	// 	const type = tree.node.children.find(kv => kv.key !== null 
+	// 		&& kv.key.token === Token.String && kv.key.value === '"type"');
+
+	// 	if (type !== undefined && type.value instanceof TokenInfo 
+	// 		&& type.value.token === Token.String && type.value.value === '"record"') {
+	// 			const typeKey = type.key as TokenInfo;
+	// 			let hasName = false;
+	// 			tree.node.children.forEach((kv) => {
+	// 				if (kv.key !== null && kv.key.token === Token.String && kv.key.value === '"name"'){
+	// 					hasName = true;
+	// 				}
+	// 			});
+
+	// 			if (!hasName) {
+	// 				yield new ValidationMessage(
+	// 					ValidationSeverity.Error,
+	// 					typeKey.position,
+	// 					type.value.length + type.value.position,
+	// 					"Attribute name is missing");
+	// 			}
+	// 	}
+
+	// 	return "Finished!";
+	// }
+
+	validate(tree: Tree): ValidationMessage[] {
+		const type = tree.node.children.find(kv => kv.key !== null 
+			&& kv.key.token === Token.String && kv.key.value === '"type"');
+
+		if (type !== undefined && type.value instanceof TokenInfo 
+			&& type.value.token === Token.String && type.value.value === '"record"') {
+				const typeKey = type.key as TokenInfo;
+				let hasName = false;
+				tree.node.children.forEach((kv) => {
+					if (kv.key !== null && kv.key.token === Token.String && kv.key.value === '"name"'){
+						hasName = true;
+					}
+				});
+
+				if (!hasName) {
+					return [new ValidationMessage(
+						ValidationSeverity.Error,
+						typeKey.position,
+						type.value.length + type.value.position,
+						"Attribute name is missing")];
+				}
+		}
+
+		return [];
+	}
+}
