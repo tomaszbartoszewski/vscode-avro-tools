@@ -204,4 +204,18 @@ describe('Tokenize', () => {
 			Token.String, Token.Colon, Token.Bool,
 			Token.RightBracket]);
 	});
+	it('should return string including colons, spaces, brackets, commas and tabs', () => {
+		const text = '"This is		some {example} (*) description. With : \\n , valid [values] https://example.com"';
+		const result = tokenize(text);
+		assert.equal(result[0].token, Token.String);
+		assert.equal(result[0].value, text);
+	});
+	it('should return free text if string is on multiple lines', () => {
+		const text = '"This\nis\nnot\nallowed"';
+		const result = tokenize(text);
+		assert.equal(result[0].token, Token.FreeText);
+		assert.equal(result[1].token, Token.FreeText);
+		assert.equal(result[2].token, Token.FreeText);
+		assert.equal(result[3].token, Token.FreeText);
+	});
 });

@@ -77,7 +77,7 @@ class DocumentIterator {
           return ['', false];
         }
       }
-      else if (this.isTokenBreaker(depth)) {
+      else if (this.document[this.position + depth] === '\n') {
         return ['', false];
       }
       else {
