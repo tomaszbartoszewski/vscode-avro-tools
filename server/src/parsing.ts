@@ -93,7 +93,7 @@ class DocumentIterator {
 
   tryGetSpecifiedWord(word: string): [string, boolean] {
     if (this.document.slice(this.position, this.position + word.length) === word && this.isTokenBreaker(word.length)){
-      this.position += word.length;
+      this.position += (word.length - 1);
       return [word, true];
     }
     return ["", false];

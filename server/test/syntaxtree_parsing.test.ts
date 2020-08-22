@@ -68,6 +68,7 @@ describe('Run tokenize and buildTree together', () => {
 			['{"a": {"b": [1,2,3', 12],
 			['{"a": {"b": [1,2,3], "c": "asd"}}', 19],
 			['{"a": 4, "c": "asd"}', 9],
+			['{"a": null, "c": false, "d": -123.43, "e": true}', 17],
 			// ['{"a": 4, "c": "asd"}}', 10],
 		];
 
