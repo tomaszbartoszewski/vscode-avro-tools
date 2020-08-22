@@ -126,7 +126,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 	}
 	var movedForward = true;
 	while (position < tokens.length && movedForward) {
-		console.log("getNode, children loop", tokens.slice(position))
+		console.log('getNode, children loop', tokens.slice(position))
 		movedForward = false;
 		if (tokens[position].token === Token.RightBracket) {
 			node.setRightBracket(tokens[position]);
@@ -144,7 +144,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 			position++;
 			movedForward = true;
 		}
-		console.log("getNode, entering getValue", tokens.slice(position));
+		console.log('getNode, entering getValue', tokens.slice(position));
 		var [value, move] = getValue(tokens.slice(position))
 		if (value !== null) {
 			keyValuePair.setValue(value);
@@ -170,11 +170,11 @@ function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, nu
 		return [tokens[position], 1];
 	}
 	else if (tokens[position].token === Token.LeftSquareBracket) {
-		console.log("getValue, entering getArray", tokens.slice(position));
+		console.log('getValue, entering getArray', tokens.slice(position));
 		return getArray(tokens);
 	}
 	else if (tokens[position].token === Token.LeftBracket) {
-		console.log("getValue, entering getNode", tokens.slice(position));
+		console.log('getValue, entering getNode', tokens.slice(position));
 		return getNode(tokens);
 	}
 
@@ -191,7 +191,7 @@ function getArray(tokens: TokenInfo[]): [ArrayNode, number] {
 	var movedForward = true;
 	while (position < tokens.length && movedForward) {
 		movedForward = false;
-		console.log("getArray, items loop", tokens.slice(position));
+		console.log('getArray, items loop', tokens.slice(position));
 		if (tokens[position].token === Token.RightSquareBracket) {
 			result.setRightBracket(tokens[position]);
 			position++;

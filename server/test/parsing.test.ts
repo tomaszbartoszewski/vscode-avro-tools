@@ -108,7 +108,7 @@ describe('Tokenize', () => {
 		const result = tokenize('{unknown}');
 		assert.equal(result[0].token, Token.LeftBracket);
 		assert.equal(result[1].token, Token.FreeText);
-		assert.equal(result[1].value, "unknown");
+		assert.equal(result[1].value, 'unknown');
 		assert.equal(result[2].token, Token.RightBracket);
 	});
 	it('should return integer', () => {
@@ -131,7 +131,7 @@ describe('Tokenize', () => {
 		const result = tokenize('test123');
 		assert.equal(result.length, 1);
 		assert.equal(result[0].token, Token.FreeText);
-		assert.equal(result[0].value, "test123");
+		assert.equal(result[0].value, 'test123');
 	});
 	it('should return position and length', () => {
 		const result = tokenize('unknown\n  test');
@@ -181,7 +181,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should return precision number with correct value', () => {
-		let numbers = ["124.12312", "0.1", "0.0", "-0.0", "-2.1", "98.7", "1762873.0", "6573.345", "-873.0", "54.54", "70854.0002", "-67845.345"];
+		let numbers = ['124.12312', '0.1', '0.0', '-0.0', '-2.1', '98.7', '1762873.0', '6573.345', '-873.0', '54.54', '70854.0002', '-67845.345'];
 		numbers.forEach(function (value) {
 			const result = tokenize(value);
 			assert.equal(result[0].token, Token.PrecisionNumber);
@@ -189,7 +189,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should return free text if numbers start with 0 number with correct value', () => {
-		let numbers = ["01.12", "-04.1", "007", "-01"];
+		let numbers = ['01.12', '-04.1', '007', '-01'];
 		numbers.forEach(function (value) {
 			const result = tokenize(value);
 			assert.equal(result[0].token, Token.FreeText);

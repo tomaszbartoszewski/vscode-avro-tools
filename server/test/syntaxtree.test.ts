@@ -48,14 +48,14 @@ class TokenContainer {
 	}
 
 	addBool(value: boolean): TokenContainer {
-		var text = (value) ? "true" : "false";
+		var text = (value) ? 'true' : 'false';
 		this.tokens.push(new TokenInfo(Token.Bool, text, this.position))
 		this.position += text.length;
 		return this;
 	}
 
 	addNull(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.Null, "null", this.position))
+		this.tokens.push(new TokenInfo(Token.Null, 'null', this.position))
 		this.position += 4;
 		return this;
 	}
@@ -311,7 +311,7 @@ describe('Build Tree', () => {
 	it('should return integer value', () => {
 		var tokens = new TokenContainer()
 			.addLeftBracket()
-				.addString('"default"').addColon().addInteger("123")
+				.addString('"default"').addColon().addInteger('123')
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node.children[0];
@@ -320,7 +320,7 @@ describe('Build Tree', () => {
 	it('should return precision number value', () => {
 		var tokens = new TokenContainer()
 			.addLeftBracket()
-				.addString('"default"').addColon().addPrecisionNumber("123.45")
+				.addString('"default"').addColon().addPrecisionNumber('123.45')
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node.children[0];
@@ -349,10 +349,9 @@ describe('Build Tree', () => {
 			.addLeftBracket()
 			.addRightBracket()
 			.addLeftBracket()
-			.addString("key")
+			.addString('key')
 			.getTokens();
 		const result = buildTree(tokens).outside;
 		assert.deepEqual(result, [tokens[2], tokens[3]]);
-		// assert.equal(result.rightBracket, tokens[1]);
 	});
 });

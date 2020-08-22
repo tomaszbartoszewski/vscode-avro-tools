@@ -74,11 +74,11 @@ class DocumentIterator {
           return [text, true];
         }
         else {
-          return ["", false];
+          return ['', false];
         }
       }
       else if (this.isTokenBreaker(depth)) {
-        return ["", false];
+        return ['', false];
       }
       else {
         text += this.document[this.position + depth];
@@ -88,7 +88,7 @@ class DocumentIterator {
         break;
       }
     }
-    return ["", false];
+    return ['', false];
   }
 
   tryGetSpecifiedWord(word: string): [string, boolean] {
@@ -96,7 +96,7 @@ class DocumentIterator {
       this.position += (word.length - 1);
       return [word, true];
     }
-    return ["", false];
+    return ['', false];
   }
 
   getFreeText(): string {
@@ -132,7 +132,7 @@ class DocumentIterator {
         numberText += nextValue;
         depth++;
       }
-      else if (nextValue === ".") {
+      else if (nextValue === '.') {
         if (containsDot) {
           isNumber = false;
           break;
@@ -146,27 +146,27 @@ class DocumentIterator {
         break;
       }
     }
-    if (isNumber && numberText !== "-") {
-      var ignoringMinusStart = (numberText[0] === "-") ? 1 : 0;
+    if (isNumber && numberText !== '-') {
+      var ignoringMinusStart = (numberText[0] === '-') ? 1 : 0;
       if (
-        containsDot && numberText[numberText.length - 1] !== "." && (
-          (numberText[ignoringMinusStart] !== "0")
-          || (numberText[ignoringMinusStart] === "0" && numberText[ignoringMinusStart + 1] === ".")
+        containsDot && numberText[numberText.length - 1] !== '.' && (
+          (numberText[ignoringMinusStart] !== '0')
+          || (numberText[ignoringMinusStart] === '0' && numberText[ignoringMinusStart + 1] === '.')
         )
       ) {
         this.position += (depth - 1);
         return [numberText, true, Token.PrecisionNumber];
       }
       if (!containsDot && (
-          (numberText[ignoringMinusStart] !== "0")
-          || (numberText[ignoringMinusStart] === "0" && numberText.length === ignoringMinusStart + 1)
+          (numberText[ignoringMinusStart] !== '0')
+          || (numberText[ignoringMinusStart] === '0' && numberText.length === ignoringMinusStart + 1)
         )
       ){
         this.position += (depth - 1);
         return [numberText, true, Token.Integer];
       }
     }
-    return ["", false, Token.FreeText];
+    return ['', false, Token.FreeText];
   }
 
   end(): boolean {
@@ -220,13 +220,13 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
-      case " ":
-      case "\t":
-      case "\n":
-      case "\r":
+      case ' ':
+      case '\t':
+      case '\n':
+      case '\r':
         break;
-      case "n":
-        var [value, ok] = iterator.tryGetSpecifiedWord("null");
+      case 'n':
+        var [value, ok] = iterator.tryGetSpecifiedWord('null');
         if (ok) {
           tokens.push(new TokenInfo(Token.Null, value, iterator.tokenPosition));
         }
@@ -234,9 +234,9 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
-      case "t":
-      case "f":
-        var searchedWord = (symbol === "t") ? "true" : "false";
+      case 't':
+      case 'f':
+        var searchedWord = (symbol === 't') ? 'true' : 'false';
         var [value, ok] = iterator.tryGetSpecifiedWord(searchedWord);
         if (ok) {
           tokens.push(new TokenInfo(Token.Bool, value, iterator.tokenPosition));
@@ -245,17 +245,17 @@ export function tokenize(document: string): TokenInfo[] {
           tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
-      case "-":
-      case "0":
-      case "1":
-      case "2":
-      case "3":
-      case "4":
-      case "5":
-      case "6":
-      case "7":
-      case "8":
-      case "9":
+      case '-':
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
         var [value, ok, token] = iterator.tryGetNumber();
         if (ok) {
           tokens.push(new TokenInfo(token, value, iterator.tokenPosition));
