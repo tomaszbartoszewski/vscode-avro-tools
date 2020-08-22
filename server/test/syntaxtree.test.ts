@@ -354,4 +354,19 @@ describe('Build Tree', () => {
 		const result = buildTree(tokens).outside;
 		assert.deepEqual(result, [tokens[2], tokens[3]]);
 	});
+	it('should return colon inside an array', () => {
+		 // inside array colon should be added, so it doesn't mess up further validation
+		const tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"type"').addColon().addLeftSquareBracket()
+					.addColon()
+				.addRightSquareBracket()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens).node;
+		assert.equal(result.children.length, 1);
+		const arrayNode = result.children[0].value as ArrayNode;
+		assert.equal(arrayNode.children.length, 1);
+		assert.equal(arrayNode.children[0].value, tokens[4]);
+	});
 });

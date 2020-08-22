@@ -126,7 +126,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 	}
 	let movedForward = true;
 	while (position < tokens.length && movedForward) {
-		console.log('getNode, children loop', tokens.slice(position))
+		// console.log('getNode, children loop', tokens.slice(position))
 		movedForward = false;
 		if (tokens[position].token === Token.RightBracket) {
 			node.setRightBracket(tokens[position]);
@@ -144,7 +144,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 			position++;
 			movedForward = true;
 		}
-		console.log('getNode, entering getValue', tokens.slice(position));
+		// console.log('getNode, entering getValue', tokens.slice(position));
 		const [value, move] = getValue(tokens.slice(position))
 		if (value !== null) {
 			keyValuePair.setValue(value);
@@ -164,17 +164,23 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 	return [node, position];
 }
 
-function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, number] {
+function getValue(tokens: TokenInfo[], isArray: boolean = false): [TokenInfo | Node | ArrayNode | null, number] {
 	const position = 0;
-	if ([Token.String, Token.Integer, Token.PrecisionNumber, Token.Bool, Token.Null].includes(tokens[position].token)) {
+	const validValueTokens = [Token.String, Token.Integer, Token.PrecisionNumber, Token.Bool, Token.Null];
+
+	if (isArray) {
+		validValueTokens.push(Token.Colon);
+	}
+
+	if (validValueTokens.includes(tokens[position].token)) {
 		return [tokens[position], 1];
 	}
 	else if (tokens[position].token === Token.LeftSquareBracket) {
-		console.log('getValue, entering getArray', tokens.slice(position));
+		// console.log('getValue, entering getArray', tokens.slice(position));
 		return getArray(tokens);
 	}
 	else if (tokens[position].token === Token.LeftBracket) {
-		console.log('getValue, entering getNode', tokens.slice(position));
+		// console.log('getValue, entering getNode', tokens.slice(position));
 		return getNode(tokens);
 	}
 
@@ -191,14 +197,14 @@ function getArray(tokens: TokenInfo[]): [ArrayNode, number] {
 	let movedForward = true;
 	while (position < tokens.length && movedForward) {
 		movedForward = false;
-		console.log('getArray, items loop', tokens.slice(position));
+		// console.log('getArray, items loop', tokens.slice(position));
 		if (tokens[position].token === Token.RightSquareBracket) {
 			result.setRightBracket(tokens[position]);
 			position++;
 			return [result, position];
 		}
 		const arrayItem = new ArrayItem();
-		const [value, move] = getValue(tokens.slice(position));
+		const [value, move] = getValue(tokens.slice(position), true);
 		if (value !== null) {
 			arrayItem.setValue(value);
 			position += move;

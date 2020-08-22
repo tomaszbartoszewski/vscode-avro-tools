@@ -69,6 +69,7 @@ describe('Run tokenize and buildTree together', () => {
 			['{"a": 4, "c": "asd"}', 9, 0],
 			['{"a": null, "c": false, "d": -123.43, "e": true}', 17, 0],
 			['{"a": 4, "c": "asd"}}', 9, 1],
+			['{"a": ["b": 0]}', 9, 0],
 		];
 
 		textNumberOfTokens.forEach(function(tn) {
