@@ -6,9 +6,10 @@ export enum Token {
   Colon,
   Comma,
   String,
-  Null,
   FreeText,
+  Null,
   Integer,
+  PrecisionNumber,
   Bool
 }
 
@@ -114,10 +115,14 @@ class DocumentIterator {
     return text;
   }
 
-  tryGetNumber(): [string, boolean] {
+  tryGetNumber(): [string, boolean, Token] {
+    // I considered regular expressions here, I wrote it this way to not have to check text few times,
+    // but as the code looks now more scary than regex I may change it later
+
     let numberText = this.document[this.position];
     let depth = 1;
-    let isInt = true;
+    let isNumber = true;
+    let containsDot = false;
     while (true) {
       if (this.isTokenBreaker(depth)) {
         break;
@@ -127,18 +132,41 @@ class DocumentIterator {
         numberText += nextValue;
         depth++;
       }
+      else if (nextValue === ".") {
+        if (containsDot) {
+          isNumber = false;
+          break;
+        }
+        containsDot = true;
+        numberText += nextValue;
+        depth++;
+      }
       else {
-        isInt = false;
+        isNumber = false;
         break;
       }
     }
-    if (isInt && numberText !== '-') {
-      this.position += (depth - 1);
-      return [numberText, true];
+    if (isNumber && numberText !== "-") {
+      var ignoringMinusStart = (numberText[0] === "-") ? 1 : 0;
+      if (
+        containsDot && numberText[numberText.length - 1] !== "." && (
+          (numberText[ignoringMinusStart] !== "0")
+          || (numberText[ignoringMinusStart] === "0" && numberText[ignoringMinusStart + 1] === ".")
+        )
+      ) {
+        this.position += (depth - 1);
+        return [numberText, true, Token.PrecisionNumber];
+      }
+      if (!containsDot && (
+          (numberText[ignoringMinusStart] !== "0")
+          || (numberText[ignoringMinusStart] === "0" && numberText.length === ignoringMinusStart + 1)
+        )
+      ){
+        this.position += (depth - 1);
+        return [numberText, true, Token.Integer];
+      }
     }
-    else {
-      return ["", false];
-    }
+    return ["", false, Token.FreeText];
   }
 
   end(): boolean {
@@ -162,8 +190,6 @@ export function tokenize(document: string): TokenInfo[] {
 
   let tokens = new TokenInfoContainer();
   let iterator = new DocumentIterator(document);
-  let value = "";
-  let ok = false;
   while (true) {
     var symbol = iterator.getNext()
     switch (symbol) {
@@ -186,7 +212,7 @@ export function tokenize(document: string): TokenInfo[] {
         tokens.push(new TokenInfo(Token.Comma, ',', iterator.tokenPosition));
         break;
       case '"':
-        [value, ok] = iterator.tryGetString();
+        var [value, ok] = iterator.tryGetString();
         if (ok) {
           tokens.push(new TokenInfo(Token.String, value, iterator.tokenPosition));
         }
@@ -200,7 +226,7 @@ export function tokenize(document: string): TokenInfo[] {
       case "\r":
         break;
       case "n":
-        [value, ok] = iterator.tryGetSpecifiedWord("null");
+        var [value, ok] = iterator.tryGetSpecifiedWord("null");
         if (ok) {
           tokens.push(new TokenInfo(Token.Null, value, iterator.tokenPosition));
         }
@@ -211,7 +237,7 @@ export function tokenize(document: string): TokenInfo[] {
       case "t":
       case "f":
         var searchedWord = (symbol === "t") ? "true" : "false";
-        [value, ok] = iterator.tryGetSpecifiedWord(searchedWord);
+        var [value, ok] = iterator.tryGetSpecifiedWord(searchedWord);
         if (ok) {
           tokens.push(new TokenInfo(Token.Bool, value, iterator.tokenPosition));
         }
@@ -220,6 +246,7 @@ export function tokenize(document: string): TokenInfo[] {
         }
         break;
       case "-":
+      case "0":
       case "1":
       case "2":
       case "3":
@@ -229,9 +256,9 @@ export function tokenize(document: string): TokenInfo[] {
       case "7":
       case "8":
       case "9":
-        [value, ok] = iterator.tryGetNumber();
+        var [value, ok, token] = iterator.tryGetNumber();
         if (ok) {
-          tokens.push(new TokenInfo(Token.Integer, value, iterator.tokenPosition));
+          tokens.push(new TokenInfo(token, value, iterator.tokenPosition));
         }
         else {
           tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));

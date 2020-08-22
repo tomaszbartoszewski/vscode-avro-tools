@@ -18,13 +18,15 @@ This extension doesn't use settings. The code touching settings is left over fro
 
 ## Known Issues
 
-Parser doesn't handle floats, true and false.
+Parser doesn't handle floats, true and false. (Done)
 
 Syntax tree only understands root node with fields. Field values must be primitives or array.
 
 * Nesting nodes inside nodes is not supported (Done, at least optimistic scenario)
 * Nesting nodes inside array is not supported (Done, at least optimistic scenario)
 * Nesting array inside array is not supported (Done, at least optimistic scenario)
+* Bool, float, int and null may not be added as value in node
+* After matching last closing bracket all text is ignored
 * Tolerance to invalid syntax is very low
 
 ## Planned Features
