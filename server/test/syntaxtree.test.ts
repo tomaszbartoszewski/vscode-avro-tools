@@ -35,6 +35,31 @@ class TokenContainer {
 		return this;
 	}
 
+	addInteger(value: string): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.Integer, value, this.position))
+		this.position += value.length;
+		return this;
+	}
+
+	addPrecisionNumber(value: string): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.PrecisionNumber, value, this.position))
+		this.position += value.length;
+		return this;
+	}
+
+	addBool(value: boolean): TokenContainer {
+		var text = (value) ? "true" : "false";
+		this.tokens.push(new TokenInfo(Token.Bool, text, this.position))
+		this.position += text.length;
+		return this;
+	}
+
+	addNull(): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.Null, "null", this.position))
+		this.position += 4;
+		return this;
+	}
+
 	addComma(): TokenContainer {
 		this.tokens.push(new TokenInfo(Token.Comma, ',', this.position))
 		this.position++;
@@ -282,5 +307,41 @@ describe('Build Tree', () => {
 		var arrayNode = result.children[0].value as ArrayNode;
 		assert.equal(arrayNode.children.length, 1);
 		assert.equal(arrayNode.children[0].value instanceof ArrayNode, true);
+	});
+	it('should return integer value', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"default"').addColon().addInteger("123")
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens).children[0];
+		assert.equal(result.value, tokens[3]);
+	});
+	it('should return precision number value', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"default"').addColon().addPrecisionNumber("123.45")
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens).children[0];
+		assert.equal(result.value, tokens[3]);
+	});
+	it('should return null value', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"default"').addColon().addNull()
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens).children[0];
+		assert.equal(result.value, tokens[3]);
+	});
+	it('should return bool value', () => {
+		var tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"default"').addColon().addBool(true)
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens).children[0];
+		assert.equal(result.value, tokens[3]);
 	});
 });

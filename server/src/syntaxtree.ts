@@ -156,7 +156,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 
 function getValue(tokens: TokenInfo[]): [TokenInfo | Node | ArrayNode | null, number] {
 	var position = 0;
-	if ([Token.String, Token.Integer].includes(tokens[position].token)) {
+	if ([Token.String, Token.Integer, Token.PrecisionNumber, Token.Bool, Token.Null].includes(tokens[position].token)) {
 		return [tokens[position], 1];
 	}
 	else if (tokens[position].token === Token.LeftSquareBracket) {
