@@ -147,7 +147,7 @@ class DocumentIterator {
       }
     }
     if (isNumber && numberText !== '-') {
-      var ignoringMinusStart = (numberText[0] === '-') ? 1 : 0;
+      const ignoringMinusStart = (numberText[0] === '-') ? 1 : 0;
       if (
         containsDot && numberText[numberText.length - 1] !== '.' && (
           (numberText[ignoringMinusStart] !== '0')
@@ -191,7 +191,7 @@ export function tokenize(document: string): TokenInfo[] {
   let tokens = new TokenInfoContainer();
   let iterator = new DocumentIterator(document);
   while (true) {
-    var symbol = iterator.getNext()
+    let symbol = iterator.getNext()
     switch (symbol) {
       case '{':
         tokens.push(new TokenInfo(Token.LeftBracket, '{', iterator.tokenPosition));

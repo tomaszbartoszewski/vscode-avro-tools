@@ -43,20 +43,20 @@ describe('Tokenize', () => {
 	});
 	it('should return tokenized object', () => {
 		const result = tokenize('{"type":"string"}');
-		let tokens = result.map(({token}) => token);
+		const tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon, Token.String, Token.RightBracket]);
 		assert.equal(result[1].value, '"type"');
 		assert.equal(result[3].value, '"string"');
 	});
 	it('should return tokenized object ignore space, tab, new line', () => {
 		const result = tokenize('{\n\r"type"  :\t  "string"  \n}');
-		let tokens = result.map(({token}) => token);
+		const tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon, Token.String, Token.RightBracket]);
 		assert.equal(result[1].value, '"type"');
 		assert.equal(result[3].value, '"string"');
 	});
 	it('should return tokenized record ignore space, tab, new line', () => {
-		let document =
+		const document =
 		`
 		{
 			"name": "test_record",
@@ -74,13 +74,13 @@ describe('Tokenize', () => {
 	});
 	it('should return tokenized array', () => {
 		const result = tokenize('["a", "b"]');
-		let tokens = result.map(({token}) => token);
+		const tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftSquareBracket, Token.String, Token.Comma, Token.String, Token.RightSquareBracket]);
 		assert.equal(result[1].value, '"a"');
 		assert.equal(result[3].value, '"b"');
 	});
 	it('should return null', () => {
-		let nullDocuments = ['null', 'null ', 'null\t', 'null\n', 'null}', 'null]', 'null{', 'null[', 'null,'];
+		const nullDocuments = ['null', 'null ', 'null\t', 'null\n', 'null}', 'null]', 'null{', 'null[', 'null,'];
 		nullDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result[0].token, Token.Null);
@@ -88,7 +88,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should not return null', () => {
-		let notNullDocuments = ['nullnot', 'null12', '"null"'];
+		const notNullDocuments = ['nullnot', 'null12', '"null"'];
 		notNullDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result.length, 1);
@@ -96,7 +96,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should return free text without matching other token', () => {
-		let freeText = ['nullnot', 'null12', 'asdnull', '123null', 'asd132', 'asd"qweqe"'];
+		const freeText = ['nullnot', 'null12', 'asdnull', '123null', 'asd132', 'asd"qweqe"'];
 		freeText.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result.length, 1);
@@ -112,16 +112,16 @@ describe('Tokenize', () => {
 		assert.equal(result[2].token, Token.RightBracket);
 	});
 	it('should return integer', () => {
-		let intDocuments = ['124', '-2 ', '0', '-0', '98\t', '1762873\n', '6573}', '-873]', '54{', '70854[', '-67845,'];
+		const intDocuments = ['124', '-2 ', '0', '-0', '98\t', '1762873\n', '6573}', '-873]', '54{', '70854[', '-67845,'];
 		intDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result[0].token, Token.Integer);
 		});
 	});
 	it('should return integer with correct value', () => {
-		let ints = [124, -2, 98, 1762873, 6573, -873, 54, 70854, -67845];
+		const ints = [124, -2, 98, 1762873, 6573, -873, 54, 70854, -67845];
 		ints.forEach(function (value) {
-			let valueText = value.toString();
+			const valueText = value.toString();
 			const result = tokenize(valueText);
 			assert.equal(result[0].token, Token.Integer);
 			assert.equal(result[0].value, valueText);
@@ -141,10 +141,10 @@ describe('Tokenize', () => {
 		assert.equal(result[1].length, 4);
 	});
 	it('should return null after other token', () => {
-		let nullDocuments = [':   null ', '\tnull', '\nnull', '}null', ']null', '{null', '[null', ',null'];
+		const nullDocuments = [':   null ', '\tnull', '\nnull', '}null', ']null', '{null', '[null', ',null'];
 		nullDocuments.forEach(function (document) {
 			const result = tokenize(document);
-			let tokenInfo = result[result.length - 1];
+			const tokenInfo = result[result.length - 1];
 			assert.equal(tokenInfo.token, Token.Null);
 			assert.equal(tokenInfo.value, 'null');
 		});
@@ -158,14 +158,14 @@ describe('Tokenize', () => {
 	});
 	it('should return commas after integers', () => {
 		const result = tokenize('{"a": [1,2,3]}');
-		let tokens = result.map(({token}) => token);
+		const tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon,
 			Token.LeftSquareBracket, Token.Integer, Token.Comma,
 			Token.Integer, Token.Comma, Token.Integer,
 			Token.RightSquareBracket, Token.RightBracket]);
 	});
 	it('should return true', () => {
-		let trueDocuments = ['true', 'true ', 'true\t', 'true\n', 'true}', 'true]', 'true{', 'true[', 'true,'];
+		const trueDocuments = ['true', 'true ', 'true\t', 'true\n', 'true}', 'true]', 'true{', 'true[', 'true,'];
 		trueDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result[0].token, Token.Bool);
@@ -173,7 +173,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should return false', () => {
-		let falseDocuments = ['false', 'false ', 'false\t', 'false\n', 'false}', 'false]', 'false{', 'false[', 'false,'];
+		const falseDocuments = ['false', 'false ', 'false\t', 'false\n', 'false}', 'false]', 'false{', 'false[', 'false,'];
 		falseDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result[0].token, Token.Bool);
@@ -181,7 +181,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should return precision number with correct value', () => {
-		let numbers = ['124.12312', '0.1', '0.0', '-0.0', '-2.1', '98.7', '1762873.0', '6573.345', '-873.0', '54.54', '70854.0002', '-67845.345'];
+		const numbers = ['124.12312', '0.1', '0.0', '-0.0', '-2.1', '98.7', '1762873.0', '6573.345', '-873.0', '54.54', '70854.0002', '-67845.345'];
 		numbers.forEach(function (value) {
 			const result = tokenize(value);
 			assert.equal(result[0].token, Token.PrecisionNumber);
@@ -189,7 +189,7 @@ describe('Tokenize', () => {
 		});
 	});
 	it('should return free text if numbers start with 0 number with correct value', () => {
-		let numbers = ['01.12', '-04.1', '007', '-01'];
+		const numbers = ['01.12', '-04.1', '007', '-01'];
 		numbers.forEach(function (value) {
 			const result = tokenize(value);
 			assert.equal(result[0].token, Token.FreeText);
@@ -198,7 +198,7 @@ describe('Tokenize', () => {
 	});
 	it('should return commas after integers', () => {
 		const result = tokenize('{"a": null, "c": false}');
-		let tokens = result.map(({token}) => token);
+		const tokens = result.map(({token}) => token);
 		assert.deepEqual(tokens, [Token.LeftBracket,
 			Token.String, Token.Colon, Token.Null, Token.Comma,
 			Token.String, Token.Colon, Token.Bool,
