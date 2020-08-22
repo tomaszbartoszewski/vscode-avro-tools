@@ -1,5 +1,15 @@
 import { TokenInfo, Token } from './parsing';
 
+export class Tree {
+	node: Node;
+	outside: TokenInfo[];
+
+	constructor(node: Node, outside: TokenInfo[]) {
+		this.node = node;
+		this.outside = outside;
+	}
+}
+
 export class Node {
 	leftBracket: TokenInfo | null;
 	children: KeyValuePair[];
@@ -96,14 +106,14 @@ export class ArrayItem {
 	}
 }
 
-export function buildTree(tokens: TokenInfo[]): Node {
+export function buildTree(tokens: TokenInfo[]): Tree {
 	if (tokens.length === 0) {
-		return new Node();
+		return new Tree(new Node(), []);
 	}
 
-	var [node, _] = getNode(tokens);
-
-	return node;
+	var [node, move] = getNode(tokens);
+	// console.log(move);
+	return new Tree(node, tokens.slice(move));
 }
 
 function getNode(tokens: TokenInfo[]): [Node, number] {
