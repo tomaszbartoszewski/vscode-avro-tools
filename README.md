@@ -25,8 +25,8 @@ Syntax tree only understands root node with fields. Field values must be primiti
 * Nesting nodes inside nodes is not supported (Done, at least optimistic scenario)
 * Nesting nodes inside array is not supported (Done, at least optimistic scenario)
 * Nesting array inside array is not supported (Done, at least optimistic scenario)
-* Bool, float, int and null may not be added as value in node
-* After matching last closing bracket all text is ignored
+* Bool, float, int and null may not be added as value in node (Done)
+* After matching last closing bracket all text is ignored (Done)
 * Tolerance to invalid syntax is very low
 
 ## Planned Features
