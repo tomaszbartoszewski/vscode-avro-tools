@@ -8,7 +8,8 @@ export enum Token {
   String,
   Null,
   FreeText,
-  Integer
+  Integer,
+  Bool
 }
 
 export class TokenInfo {
@@ -89,10 +90,10 @@ class DocumentIterator {
     return ["", false];
   }
 
-  tryGetNull(): [string, boolean] {
-    if (this.document.slice(this.position, this.position + 4) === "null" && this.isTokenBreaker(4)){
-      this.position += 4;
-      return ["null", true];
+  tryGetSpecifiedWord(word: string): [string, boolean] {
+    if (this.document.slice(this.position, this.position + word.length) === word && this.isTokenBreaker(word.length)){
+      this.position += word.length;
+      return [word, true];
     }
     return ["", false];
   }
@@ -164,7 +165,8 @@ export function tokenize(document: string): TokenInfo[] {
   let value = "";
   let ok = false;
   while (true) {
-    switch (iterator.getNext()) {
+    var symbol = iterator.getNext()
+    switch (symbol) {
       case '{':
         tokens.push(new TokenInfo(Token.LeftBracket, '{', iterator.tokenPosition));
         break;
@@ -198,9 +200,20 @@ export function tokenize(document: string): TokenInfo[] {
       case "\r":
         break;
       case "n":
-        [value, ok] = iterator.tryGetNull();
+        [value, ok] = iterator.tryGetSpecifiedWord("null");
         if (ok) {
           tokens.push(new TokenInfo(Token.Null, value, iterator.tokenPosition));
+        }
+        else {
+          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
+        }
+        break;
+      case "t":
+      case "f":
+        var searchedWord = (symbol === "t") ? "true" : "false";
+        [value, ok] = iterator.tryGetSpecifiedWord(searchedWord);
+        if (ok) {
+          tokens.push(new TokenInfo(Token.Bool, value, iterator.tokenPosition));
         }
         else {
           tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));

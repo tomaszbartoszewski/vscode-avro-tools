@@ -164,4 +164,20 @@ describe('Tokenize', () => {
 			Token.Integer, Token.Comma, Token.Integer,
 			Token.RightSquareBracket, Token.RightBracket]);
 	});
+	it('should return true', () => {
+		let trueDocuments = ['true', 'true ', 'true\t', 'true\n', 'true}', 'true]', 'true{', 'true[', 'true,'];
+		trueDocuments.forEach(function (document) {
+			const result = tokenize(document);
+			assert.equal(result[0].token, Token.Bool);
+			assert.equal(result[0].value, 'true');
+		});
+	});
+	it('should return false', () => {
+		let falseDocuments = ['false', 'false ', 'false\t', 'false\n', 'false}', 'false]', 'false{', 'false[', 'false,'];
+		falseDocuments.forEach(function (document) {
+			const result = tokenize(document);
+			assert.equal(result[0].token, Token.Bool);
+			assert.equal(result[0].value, 'false');
+		});
+	});
 });
