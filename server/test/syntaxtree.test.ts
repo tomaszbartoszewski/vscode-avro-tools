@@ -78,6 +78,12 @@ class TokenContainer {
 		return this;
 	}
 
+	addFreeText(value: string): TokenContainer {
+		this.tokens.push(new TokenInfo(Token.FreeText, value, this.position))
+		this.position += value.length;
+		return this;
+	}
+
 	getTokens(): TokenInfo[] {
 		return this.tokens;
 	}
@@ -368,5 +374,14 @@ describe('Build Tree', () => {
 		const arrayNode = result.children[0].value as ArrayNode;
 		assert.equal(arrayNode.children.length, 1);
 		assert.equal(arrayNode.children[0].value, tokens[4]);
+	});
+	it('should return free text value', () => {
+		const tokens = new TokenContainer()
+			.addLeftBracket()
+				.addString('"default"').addColon().addFreeText('wrong')
+			.addRightBracket()
+			.getTokens();
+		const result = buildTree(tokens).node.children[0];
+		assert.equal(result.value, tokens[3]);
 	});
 });

@@ -166,7 +166,7 @@ function getNode(tokens: TokenInfo[]): [Node, number] {
 
 function getValue(tokens: TokenInfo[], isArray: boolean = false): [TokenInfo | Node | ArrayNode | null, number] {
 	const position = 0;
-	const validValueTokens = [Token.String, Token.Integer, Token.PrecisionNumber, Token.Bool, Token.Null];
+	const validValueTokens = [Token.String, Token.Integer, Token.PrecisionNumber, Token.Bool, Token.Null, Token.FreeText];
 
 	if (isArray) {
 		validValueTokens.push(Token.Colon);
