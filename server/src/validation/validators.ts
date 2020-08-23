@@ -52,11 +52,12 @@ export class ExpectedAttributesValidator implements Validator {
 		return messageAggregator.getAll();
 	}
 
-	validateNode(node: Node, messageAggregator: ValidationMessageAggregator) {
+	validateNode(node: Node, messageAggregator: ValidationMessageAggregator, isField: boolean = false) {
 		const nodeStart = (node.leftBracket !== null) ? node.leftBracket.position : 0;
 		const nodeEnd = (node.rightBracket !== null)
 			? node.rightBracket.position + node.rightBracket.value.length
 			: nodeStart + 1;
+
 		const typeMissing = this.expectedAttribute(node.children, '"type"', nodeStart, nodeEnd);
 
 		if (typeMissing !== null) {
@@ -69,14 +70,22 @@ export class ExpectedAttributesValidator implements Validator {
 				const token: StringToken = type.value;
 				const typeKey = type.key as StringToken;
 				const requiredAttributes = this.typeRequiredAttributes.get(token.value);
+
+				let attributesToValidate: Set<string> = new Set();
 				if (requiredAttributes !== undefined) {
-					requiredAttributes.forEach((attributeName) => {
-						const attributeMissing = this.expectedAttribute(node.children, attributeName, typeKey.position, token.value.length + token.position);
-						if (attributeMissing !== null) {
-							messageAggregator.addMessage(attributeMissing);
-						}
-					});
+					attributesToValidate = new Set(requiredAttributes);
 				}
+
+				if (isField) {
+					attributesToValidate.add('"name"');
+				}
+
+				attributesToValidate.forEach((attributeName) => {
+					const attributeMissing = this.expectedAttribute(node.children, attributeName, typeKey.position, token.value.length + token.position);
+					if (attributeMissing !== null) {
+						messageAggregator.addMessage(attributeMissing);
+					}
+				});
 
 				if (token.value === '"record"') {
 					const fieldsAttribute = node.children.find(kv => kv.key !== null && kv.key.value === '"fields"');
@@ -86,7 +95,7 @@ export class ExpectedAttributesValidator implements Validator {
 						fields.forEach((field) => {
 							if (field.value instanceof Node) {
 								// console.log('Validate node', field);
-								this.validateNode(field.value, messageAggregator);
+								this.validateNode(field.value, messageAggregator, true);
 							}
 						});
 					}
