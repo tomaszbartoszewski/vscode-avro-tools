@@ -58,8 +58,6 @@ export class ExpectedAttributesValidator implements Validator {
 			? node.rightBracket.position + node.rightBracket.value.length
 			: nodeStart + 1;
 
-		const typeMissing = this.expectedAttribute(node.children, '"type"', nodeStart, nodeEnd);
-
 		if (isField) {
 			const attributeMissing = this.expectedAttribute(node.children, '"name"', nodeStart, nodeEnd);
 			if (attributeMissing !== null) {
@@ -67,6 +65,7 @@ export class ExpectedAttributesValidator implements Validator {
 			}
 		}
 
+		const typeMissing = this.expectedAttribute(node.children, '"type"', nodeStart, nodeEnd);
 		if (typeMissing !== null) {
 			messageAggregator.addMessage(typeMissing);
 		}
@@ -123,6 +122,16 @@ export class ExpectedAttributesValidator implements Validator {
 		// console.log(attribute);
 		if (attribute instanceof KeyValuePair && attribute.value instanceof Node) {
 			this.validateNode(attribute.value, messageAggregator);
+		}
+		else if (attribute instanceof KeyValuePair && attribute.value instanceof ArrayNode) { // union
+			const types: ArrayItem[] = attribute.value.children;
+			// console.log(types);
+			types.forEach((type) => {
+				if (type.value instanceof Node) {
+					// console.log('Complex type in union', type.value);
+					this.validateNode(type.value, messageAggregator);
+				}
+			});
 		}
 	}
 

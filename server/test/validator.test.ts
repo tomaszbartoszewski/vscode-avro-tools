@@ -18,6 +18,16 @@ function nodeWithBrackets(leftBracket: LeftBracketToken, rightBracket: RightBrac
 	return node;
 }
 
+function arrayNodeWithValues(...values: (Token|Node)[]): ArrayNode {
+	const arrayNode = new ArrayNode();
+	values.forEach((attribute) => {
+		const arrayItem = new ArrayItem();
+		arrayItem.setValue(attribute);
+		arrayNode.addChild(arrayItem);
+	});
+	return arrayNode;
+}
+
 function keyValue(key: StringToken, value: Token | ArrayNode | null = null): KeyValuePair {
 	const keyValuePair = new KeyValuePair();
 	keyValuePair.setKey(key);
@@ -250,5 +260,25 @@ describe('AttributeValidator', () => {
 				59,
 				'Attribute "fields" is missing'));
 		});
+	});
+
+	it('validate complex type inside a union', () => {
+		const typeNode = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 53), new StringToken('"array"', 61)))
+
+		const types = arrayNodeWithValues(new StringToken('null', 43), typeNode);
+
+		const node = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 1), types),
+			keyValue(new StringToken('"name"', 80))
+		);
+		const tree = new Tree(node, []);
+		const highlights = nodeFieldsValidator.validate(tree);
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			53,
+			68,
+			'Attribute "items" is missing'));
 	});
 });
