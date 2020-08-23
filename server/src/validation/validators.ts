@@ -43,6 +43,7 @@ export class ExpectedAttributesValidator implements Validator {
 			['"enum"', ['"name"', '"symbols"']],
 			['"fixed"', ['"name"', '"size"']],
 			['"array"', ['"items"']],
+			['"map"', ['"values"']],
 		]);
 
 	validate(tree: Tree): ValidationMessage[] {

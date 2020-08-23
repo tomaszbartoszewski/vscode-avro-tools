@@ -140,6 +140,20 @@ describe('AttributeValidator', () => {
 			'Attribute "items" is missing'));
 	});
 
+	it('map requires "values"', () => {
+		const node = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 1), new StringToken('"map"', 8))
+		);
+		const tree = new Tree(node, []);
+		const highlights = nodeFieldsValidator.validate(tree);
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			1,
+			13,
+			'Attribute "values" is missing'));
+	});
+
 	it('validate record nested fields', () => {
 		const childNode = nodeWithAttributes(
 			keyValue(new StringToken('"type"', 40), new StringToken('"record"', 48)),
