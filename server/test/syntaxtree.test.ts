@@ -1,9 +1,9 @@
 import * as assert from 'assert';
 import {buildTree, ArrayNode, ArrayItem, Node} from '../src/syntaxtree';
-import { TokenInfo, Token } from '../src/parsing';
+import { Token, LeftBracketToken, RightBracketToken, ColonToken, StringToken, IntegerToken, PrecisionNumberToken, BoolToken, NullToken, CommaToken, LeftSquareBracketToken, RightSquareBracketToken, FreeTextToken } from '../src/parsing';
 
 class TokenContainer {
-	tokens: TokenInfo[];
+	tokens: Token[];
 	position: number;
 
 	constructor() {
@@ -12,79 +12,79 @@ class TokenContainer {
 	}
 
 	addLeftBracket(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.LeftBracket, '{', this.position))
+		this.tokens.push(new LeftBracketToken('{', this.position));
 		this.position++;
 		return this;
 	}
 
 	addRightBracket(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.RightBracket, '}', this.position))
+		this.tokens.push(new RightBracketToken('}', this.position));
 		this.position++;
 		return this;
 	}
 
 	addColon(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.Colon, ':', this.position))
+		this.tokens.push(new ColonToken(':', this.position));
 		this.position++;
 		return this;
 	}
 
 	addString(value: string): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.String, value, this.position))
+		this.tokens.push(new StringToken(value, this.position));
 		this.position += value.length;
 		return this;
 	}
 
 	addInteger(value: string): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.Integer, value, this.position))
+		this.tokens.push(new IntegerToken(value, this.position));
 		this.position += value.length;
 		return this;
 	}
 
 	addPrecisionNumber(value: string): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.PrecisionNumber, value, this.position))
+		this.tokens.push(new PrecisionNumberToken(value, this.position));
 		this.position += value.length;
 		return this;
 	}
 
 	addBool(value: boolean): TokenContainer {
 		const text = (value) ? 'true' : 'false';
-		this.tokens.push(new TokenInfo(Token.Bool, text, this.position))
+		this.tokens.push(new BoolToken(text, this.position));
 		this.position += text.length;
 		return this;
 	}
 
 	addNull(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.Null, 'null', this.position))
+		this.tokens.push(new NullToken('null', this.position));
 		this.position += 4;
 		return this;
 	}
 
 	addComma(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.Comma, ',', this.position))
+		this.tokens.push(new CommaToken(',', this.position));
 		this.position++;
 		return this;
 	}
 
 	addLeftSquareBracket(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.LeftSquareBracket, '[', this.position))
+		this.tokens.push(new LeftSquareBracketToken('[', this.position));
 		this.position++;
 		return this;
 	}
 
 	addRightSquareBracket(): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.RightSquareBracket, ']', this.position))
+		this.tokens.push(new RightSquareBracketToken(']', this.position));
 		this.position++;
 		return this;
 	}
 
 	addFreeText(value: string): TokenContainer {
-		this.tokens.push(new TokenInfo(Token.FreeText, value, this.position))
+		this.tokens.push(new FreeTextToken(value, this.position));
 		this.position += value.length;
 		return this;
 	}
 
-	getTokens(): TokenInfo[] {
+	getTokens(): Token[] {
 		return this.tokens;
 	}
 }
