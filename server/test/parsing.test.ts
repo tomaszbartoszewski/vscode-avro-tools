@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {tokenize, Token} from '../src/parsing';
+import { tokenize, Token, LeftBracketToken, RightBracketToken, LeftSquareBracketToken, ColonToken, CommaToken, StringToken, RightSquareBracketToken, NullToken, FreeTextToken, IntegerToken, BoolToken, PrecisionNumberToken } from '../src/parsing';
 
 describe('Tokenize', () => {
 	it('should return empty array', () => {
@@ -8,56 +8,62 @@ describe('Tokenize', () => {
 	});
 	it('should return left bracket', () => {
 		const result = tokenize('{');
-		assert.equal(result[0].token, Token.LeftBracket);
+		assert.equal(result[0] instanceof LeftBracketToken, true);
 		assert.equal(result[0].value, '{');
 	});
 	it('should return right bracket', () => {
 		const result = tokenize('}');
-		assert.equal(result[0].token, Token.RightBracket);
+		assert.equal(result[0] instanceof RightBracketToken, true);
 		assert.equal(result[0].value, '}');
 	});
 	it('should return left square bracket', () => {
 		const result = tokenize('[');
-		assert.equal(result[0].token, Token.LeftSquareBracket);
+		assert.equal(result[0] instanceof LeftSquareBracketToken, true);
 		assert.equal(result[0].value, '[');
 	});
 	it('should return right square bracket', () => {
 		const result = tokenize(']');
-		assert.equal(result[0].token, Token.RightSquareBracket);
+		assert.equal(result[0] instanceof RightSquareBracketToken, true);
 		assert.equal(result[0].value, ']');
 	});
 	it('should return colon', () => {
 		const result = tokenize(':');
-		assert.equal(result[0].token, Token.Colon);
+		assert.equal(result[0] instanceof ColonToken, true);
 		assert.equal(result[0].value, ':');
 	});
 	it('should return comma', () => {
 		const result = tokenize(',');
-		assert.equal(result[0].token, Token.Comma);
+		assert.equal(result[0] instanceof CommaToken, true);
 		assert.equal(result[0].value, ',');
 	});
 	it('should return string', () => {
 		const result = tokenize('"record"');
-		assert.equal(result[0].token, Token.String);
+		assert.equal(result[0] instanceof StringToken, true);
 		assert.equal(result[0].value, '"record"');
 	});
 	it('should return tokenized object', () => {
 		const result = tokenize('{"type":"string"}');
-		const tokens = result.map(({token}) => token);
-		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon, Token.String, Token.RightBracket]);
+		assert.equal(result[0] instanceof LeftBracketToken, true);
+		assert.equal(result[1] instanceof StringToken, true);
+		assert.equal(result[2] instanceof ColonToken, true);
+		assert.equal(result[3] instanceof StringToken, true);
+		assert.equal(result[4] instanceof RightBracketToken, true);
 		assert.equal(result[1].value, '"type"');
 		assert.equal(result[3].value, '"string"');
 	});
 	it('should return tokenized object ignore space, tab, new line', () => {
 		const result = tokenize('{\n\r"type"  :\t  "string"  \n}');
-		const tokens = result.map(({token}) => token);
-		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon, Token.String, Token.RightBracket]);
+		assert.equal(result[0] instanceof LeftBracketToken, true);
+		assert.equal(result[1] instanceof StringToken, true);
+		assert.equal(result[2] instanceof ColonToken, true);
+		assert.equal(result[3] instanceof StringToken, true);
+		assert.equal(result[4] instanceof RightBracketToken, true);
 		assert.equal(result[1].value, '"type"');
 		assert.equal(result[3].value, '"string"');
 	});
 	it('should return tokenized record ignore space, tab, new line', () => {
 		const document =
-		`
+			`
 		{
 			"name": "test_record",
 			"type": "record",
@@ -74,8 +80,11 @@ describe('Tokenize', () => {
 	});
 	it('should return tokenized array', () => {
 		const result = tokenize('["a", "b"]');
-		const tokens = result.map(({token}) => token);
-		assert.deepEqual(tokens, [Token.LeftSquareBracket, Token.String, Token.Comma, Token.String, Token.RightSquareBracket]);
+		assert.equal(result[0] instanceof LeftSquareBracketToken, true);
+		assert.equal(result[1] instanceof StringToken, true);
+		assert.equal(result[2] instanceof CommaToken, true);
+		assert.equal(result[3] instanceof StringToken, true);
+		assert.equal(result[4] instanceof RightSquareBracketToken, true);
 		assert.equal(result[1].value, '"a"');
 		assert.equal(result[3].value, '"b"');
 	});
@@ -83,7 +92,7 @@ describe('Tokenize', () => {
 		const nullDocuments = ['null', 'null ', 'null\t', 'null\n', 'null}', 'null]', 'null{', 'null[', 'null,'];
 		nullDocuments.forEach(function (document) {
 			const result = tokenize(document);
-			assert.equal(result[0].token, Token.Null);
+			assert.equal(result[0] instanceof NullToken, true);
 			assert.equal(result[0].value, 'null');
 		});
 	});
@@ -92,7 +101,7 @@ describe('Tokenize', () => {
 		notNullDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result.length, 1);
-			assert.notEqual(result[0].token, Token.Null);
+			assert.notEqual(result[0] instanceof NullToken, true);
 		});
 	});
 	it('should return free text without matching other token', () => {
@@ -100,22 +109,22 @@ describe('Tokenize', () => {
 		freeText.forEach(function (document) {
 			const result = tokenize(document);
 			assert.equal(result.length, 1);
-			assert.equal(result[0].token, Token.FreeText);
+			assert.equal(result[0] instanceof FreeTextToken, true);
 			assert.equal(result[0].value, document);
 		});
 	});
 	it('should return free text when containing other matches', () => {
 		const result = tokenize('{unknown}');
-		assert.equal(result[0].token, Token.LeftBracket);
-		assert.equal(result[1].token, Token.FreeText);
+		assert.equal(result[0] instanceof LeftBracketToken, true);
+		assert.equal(result[1] instanceof FreeTextToken, true);
 		assert.equal(result[1].value, 'unknown');
-		assert.equal(result[2].token, Token.RightBracket);
+		assert.equal(result[2] instanceof RightBracketToken, true);
 	});
 	it('should return integer', () => {
 		const intDocuments = ['124', '-2 ', '0', '-0', '98\t', '1762873\n', '6573}', '-873]', '54{', '70854[', '-67845,'];
 		intDocuments.forEach(function (document) {
 			const result = tokenize(document);
-			assert.equal(result[0].token, Token.Integer);
+			assert.equal(result[0] instanceof IntegerToken, true);
 		});
 	});
 	it('should return integer with correct value', () => {
@@ -123,14 +132,14 @@ describe('Tokenize', () => {
 		ints.forEach(function (value) {
 			const valueText = value.toString();
 			const result = tokenize(valueText);
-			assert.equal(result[0].token, Token.Integer);
+			assert.equal(result[0] instanceof IntegerToken, true);
 			assert.equal(result[0].value, valueText);
 		});
 	});
 	it('should not return integer', () => {
 		const result = tokenize('test123');
 		assert.equal(result.length, 1);
-		assert.equal(result[0].token, Token.FreeText);
+		assert.equal(result[0] instanceof FreeTextToken, true);
 		assert.equal(result[0].value, 'test123');
 	});
 	it('should return position and length', () => {
@@ -145,7 +154,7 @@ describe('Tokenize', () => {
 		nullDocuments.forEach(function (document) {
 			const result = tokenize(document);
 			const tokenInfo = result[result.length - 1];
-			assert.equal(tokenInfo.token, Token.Null);
+			assert.equal(tokenInfo instanceof NullToken, true);
 			assert.equal(tokenInfo.value, 'null');
 		});
 	});
@@ -157,18 +166,27 @@ describe('Tokenize', () => {
 		assert.equal(result[1].length, 6);
 	});
 	it('should return commas after integers', () => {
-		const result = tokenize('{"a": [1,2,3]}');
-		const tokens = result.map(({token}) => token);
-		assert.deepEqual(tokens, [Token.LeftBracket, Token.String, Token.Colon,
-			Token.LeftSquareBracket, Token.Integer, Token.Comma,
-			Token.Integer, Token.Comma, Token.Integer,
-			Token.RightSquareBracket, Token.RightBracket]);
+		const tokens = tokenize('{"a": [1,2,3]}');
+		assert.equal(tokens[0] instanceof LeftBracketToken, true);
+		assert.equal(tokens[1] instanceof StringToken, true);
+		assert.equal(tokens[2] instanceof ColonToken, true);
+
+		assert.equal(tokens[3] instanceof LeftSquareBracketToken, true);
+		assert.equal(tokens[4] instanceof IntegerToken, true);
+		assert.equal(tokens[5] instanceof CommaToken, true);
+
+		assert.equal(tokens[6] instanceof IntegerToken, true);
+		assert.equal(tokens[7] instanceof CommaToken, true);
+		assert.equal(tokens[8] instanceof IntegerToken, true);
+
+		assert.equal(tokens[9] instanceof RightSquareBracketToken, true);
+		assert.equal(tokens[10] instanceof RightBracketToken, true);
 	});
 	it('should return true', () => {
 		const trueDocuments = ['true', 'true ', 'true\t', 'true\n', 'true}', 'true]', 'true{', 'true[', 'true,'];
 		trueDocuments.forEach(function (document) {
 			const result = tokenize(document);
-			assert.equal(result[0].token, Token.Bool);
+			assert.equal(result[0] instanceof BoolToken, true);
 			assert.equal(result[0].value, 'true');
 		});
 	});
@@ -176,7 +194,7 @@ describe('Tokenize', () => {
 		const falseDocuments = ['false', 'false ', 'false\t', 'false\n', 'false}', 'false]', 'false{', 'false[', 'false,'];
 		falseDocuments.forEach(function (document) {
 			const result = tokenize(document);
-			assert.equal(result[0].token, Token.Bool);
+			assert.equal(result[0] instanceof BoolToken, true);
 			assert.equal(result[0].value, 'false');
 		});
 	});
@@ -184,7 +202,7 @@ describe('Tokenize', () => {
 		const numbers = ['124.12312', '0.1', '0.0', '-0.0', '-2.1', '98.7', '1762873.0', '6573.345', '-873.0', '54.54', '70854.0002', '-67845.345'];
 		numbers.forEach(function (value) {
 			const result = tokenize(value);
-			assert.equal(result[0].token, Token.PrecisionNumber);
+			assert.equal(result[0] instanceof PrecisionNumberToken, true);
 			assert.equal(result[0].value, value);
 		});
 	});
@@ -192,30 +210,34 @@ describe('Tokenize', () => {
 		const numbers = ['01.12', '-04.1', '007', '-01'];
 		numbers.forEach(function (value) {
 			const result = tokenize(value);
-			assert.equal(result[0].token, Token.FreeText);
+			assert.equal(result[0] instanceof FreeTextToken, true);
 			assert.equal(result[0].value, value);
 		});
 	});
 	it('should return commas after integers', () => {
-		const result = tokenize('{"a": null, "c": false}');
-		const tokens = result.map(({token}) => token);
-		assert.deepEqual(tokens, [Token.LeftBracket,
-			Token.String, Token.Colon, Token.Null, Token.Comma,
-			Token.String, Token.Colon, Token.Bool,
-			Token.RightBracket]);
+		const tokens = tokenize('{"a": null, "c": false}');
+		assert.equal(tokens[0] instanceof LeftBracketToken, true);
+		assert.equal(tokens[1] instanceof StringToken, true);
+		assert.equal(tokens[2] instanceof ColonToken, true);
+		assert.equal(tokens[3] instanceof NullToken, true);
+		assert.equal(tokens[4] instanceof CommaToken, true);
+		assert.equal(tokens[5] instanceof StringToken, true);
+		assert.equal(tokens[6] instanceof ColonToken, true);
+		assert.equal(tokens[7] instanceof BoolToken, true);
+		assert.equal(tokens[8] instanceof RightBracketToken, true);
 	});
 	it('should return string including colons, spaces, brackets, commas and tabs', () => {
 		const text = '"This is		some {example} (*) description. With : \\n , valid [values] https://example.com"';
 		const result = tokenize(text);
-		assert.equal(result[0].token, Token.String);
+		assert.equal(result[0] instanceof StringToken, true);
 		assert.equal(result[0].value, text);
 	});
 	it('should return free text if string is on multiple lines', () => {
 		const text = '"This\nis\nnot\nallowed"';
 		const result = tokenize(text);
-		assert.equal(result[0].token, Token.FreeText);
-		assert.equal(result[1].token, Token.FreeText);
-		assert.equal(result[2].token, Token.FreeText);
-		assert.equal(result[3].token, Token.FreeText);
+		assert.equal(result[0] instanceof FreeTextToken, true);
+		assert.equal(result[1] instanceof FreeTextToken, true);
+		assert.equal(result[2] instanceof FreeTextToken, true);
+		assert.equal(result[3] instanceof FreeTextToken, true);
 	});
 });

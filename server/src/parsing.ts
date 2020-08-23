@@ -1,46 +1,101 @@
-export enum Token {
-  LeftBracket,
-  RightBracket,
-  LeftSquareBracket,
-  RightSquareBracket,
-  Colon,
-  Comma,
-  String,
-  FreeText,
-  Null,
-  Integer,
-  PrecisionNumber,
-  Bool
-}
-
-export class TokenInfo {
-  token: Token;
+export abstract class Token {
   value: string;
   position: number;
   length: number;
 
-  constructor(token: Token, value: string, position: number) {
-    this.token = token;
+  constructor(value: string, position: number) {
     this.value = value;
     this.position = position;
     this.length = value.length;
   }
 }
 
-class TokenInfoContainer {
-  tokens: TokenInfo[];
+export class LeftBracketToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class RightBracketToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class LeftSquareBracketToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class RightSquareBracketToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class ColonToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class CommaToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class StringToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class FreeTextToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class NullToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class IntegerToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class PrecisionNumberToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+export class BoolToken extends Token {
+  constructor(value: string, position: number) {
+    super(value, position);
+  }
+}
+
+class TokenContainer {
+  tokens: Token[];
 
   constructor() {
     this.tokens = [];
   }
 
-  push(token: TokenInfo | null) {
+  push(token: Token | null) {
     if (token != null) {
       this.tokens.push(token);
     }
   }
 
-  getTokens(): TokenInfo[] {
+  getTokens(): Token[] {
     return this.tokens;
   }
 }
@@ -115,7 +170,7 @@ class DocumentIterator {
     return text;
   }
 
-  tryGetNumber(): [string, boolean, Token] {
+  tryGetNumber(): [string, boolean, boolean] { // TODO: change this confusing signature after types refactoring (value, success, is Int)
     // I considered regular expressions here, I wrote it this way to not have to check text few times,
     // but as the code looks now more scary than regex I may change it later
 
@@ -155,7 +210,7 @@ class DocumentIterator {
         )
       ) {
         this.position += (depth - 1);
-        return [numberText, true, Token.PrecisionNumber];
+        return [numberText, true, false];
       }
       if (!containsDot && (
           (numberText[ignoringMinusStart] !== '0')
@@ -163,10 +218,10 @@ class DocumentIterator {
         )
       ){
         this.position += (depth - 1);
-        return [numberText, true, Token.Integer];
+        return [numberText, true, true];
       }
     }
-    return ['', false, Token.FreeText];
+    return ['', false, false];
   }
 
   end(): boolean {
@@ -183,41 +238,41 @@ class DocumentIterator {
   }
 }
 
-export function tokenize(document: string): TokenInfo[] {
+export function tokenize(document: string): Token[] {
   if (document.length === 0) {
     return []
   }
 
-  let tokens = new TokenInfoContainer();
+  let tokens = new TokenContainer();
   let iterator = new DocumentIterator(document);
   while (true) {
     let symbol = iterator.getNext()
     switch (symbol) {
       case '{':
-        tokens.push(new TokenInfo(Token.LeftBracket, '{', iterator.tokenPosition));
+        tokens.push(new LeftBracketToken('{', iterator.tokenPosition));
         break;
       case '}':
-        tokens.push(new TokenInfo(Token.RightBracket, '}', iterator.tokenPosition));
+        tokens.push(new RightBracketToken('}', iterator.tokenPosition));
         break;
       case '[':
-        tokens.push(new TokenInfo(Token.LeftSquareBracket, '[', iterator.tokenPosition));
+        tokens.push(new LeftSquareBracketToken('[', iterator.tokenPosition));
         break;
       case ']':
-        tokens.push(new TokenInfo(Token.RightSquareBracket, ']', iterator.tokenPosition));
+        tokens.push(new RightSquareBracketToken(']', iterator.tokenPosition));
         break;
       case ':':
-        tokens.push(new TokenInfo(Token.Colon, ':', iterator.tokenPosition));
+        tokens.push(new ColonToken(':', iterator.tokenPosition));
         break;
       case ',':
-        tokens.push(new TokenInfo(Token.Comma, ',', iterator.tokenPosition));
+        tokens.push(new CommaToken(',', iterator.tokenPosition));
         break;
       case '"':
         var [value, ok] = iterator.tryGetString();
         if (ok) {
-          tokens.push(new TokenInfo(Token.String, value, iterator.tokenPosition));
+          tokens.push(new StringToken(value, iterator.tokenPosition));
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
+          tokens.push(new FreeTextToken(iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       case ' ':
@@ -228,10 +283,10 @@ export function tokenize(document: string): TokenInfo[] {
       case 'n':
         var [value, ok] = iterator.tryGetSpecifiedWord('null');
         if (ok) {
-          tokens.push(new TokenInfo(Token.Null, value, iterator.tokenPosition));
+          tokens.push(new NullToken(value, iterator.tokenPosition));
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
+          tokens.push(new FreeTextToken(iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       case 't':
@@ -239,10 +294,10 @@ export function tokenize(document: string): TokenInfo[] {
         var searchedWord = (symbol === 't') ? 'true' : 'false';
         var [value, ok] = iterator.tryGetSpecifiedWord(searchedWord);
         if (ok) {
-          tokens.push(new TokenInfo(Token.Bool, value, iterator.tokenPosition));
+          tokens.push(new BoolToken(value, iterator.tokenPosition));
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
+          tokens.push(new FreeTextToken(iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       case '-':
@@ -256,16 +311,21 @@ export function tokenize(document: string): TokenInfo[] {
       case '7':
       case '8':
       case '9':
-        var [value, ok, token] = iterator.tryGetNumber();
+        var [value, ok, isInt] = iterator.tryGetNumber();
         if (ok) {
-          tokens.push(new TokenInfo(token, value, iterator.tokenPosition));
+          if (isInt) {
+            tokens.push(new IntegerToken(value, iterator.tokenPosition));
+          }
+          else {
+            tokens.push(new PrecisionNumberToken(value, iterator.tokenPosition));
+          }
         }
         else {
-          tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
+          tokens.push(new FreeTextToken(iterator.getFreeText(), iterator.tokenPosition));
         }
         break;
       default:
-        tokens.push(new TokenInfo(Token.FreeText, iterator.getFreeText(), iterator.tokenPosition));
+        tokens.push(new FreeTextToken(iterator.getFreeText(), iterator.tokenPosition));
     }
     if (iterator.end()) {
       break;
