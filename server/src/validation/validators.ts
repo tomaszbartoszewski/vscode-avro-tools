@@ -107,6 +107,9 @@ export class ExpectedAttributesValidator implements Validator {
 					}
 				}
 			}
+			else if (type instanceof KeyValuePair && type.value instanceof Node) {
+				this.validateNode(type.value, messageAggregator);
+			}
 		}
 	}
 

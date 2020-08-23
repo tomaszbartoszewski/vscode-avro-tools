@@ -181,7 +181,11 @@ describe('AttributeValidator', () => {
 			'Attribute "fields" is missing'));
 	});
 
-	const fieldTypes: [StringToken | Node, string][] = [[new StringToken('"string"', 51), '"string"'], [new Node(), '{}']];
+	const fieldTypes: [StringToken | Node, string][] = [
+		[new StringToken('"string"', 51), '"string"'],
+		[nodeWithAttributes(
+			keyValue(new StringToken('"type"', 51), new StringToken('"string"', 58))
+		), '{"type": "string"}']];
 	fieldTypes.forEach(([typeValue, description]) => {
 		it('validate name on a field with type ' + description, () => {
 			const childNode = nodeWithBrackets(new LeftBracketToken('{', 42), new RightBracketToken('}', 60));
@@ -206,5 +210,23 @@ describe('AttributeValidator', () => {
 				61,
 				'Attribute "name" is missing'));
 		});
+	});
+
+	it('type defined inline validate inside', () => {
+		const typeNode = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 43), new StringToken('"array"', 51)))
+
+		const node = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 1), typeNode),
+			keyValue(new StringToken('"name"', 20))
+		);
+		const tree = new Tree(node, []);
+		const highlights = nodeFieldsValidator.validate(tree);
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			43,
+			58,
+			'Attribute "items" is missing'));
 	});
 });
