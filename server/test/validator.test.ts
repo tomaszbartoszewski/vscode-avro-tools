@@ -104,7 +104,7 @@ describe('AttributeValidator', () => {
 			ValidationSeverity.Error,
 			1,
 			16,
-			'Attribute name is missing'));
+			'Attribute "name" is missing'));
 	});
 	it('top level node requires fields', () => {
 		const node = nodeWithAttributes(
@@ -118,7 +118,7 @@ describe('AttributeValidator', () => {
 			ValidationSeverity.Error,
 			1,
 			16,
-			'Attribute fields is missing'));
+			'Attribute "fields" is missing'));
 	});
 	it('top level node both name and fields are missing, two errors', () => {
 		const node = nodeWithAttributes(

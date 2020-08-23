@@ -59,38 +59,37 @@ export class ExpectedAttributesValidator implements Validator {
 		const type = tree.node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
 
 		if (type instanceof KeyValuePair && type.value instanceof StringToken && type.value.value === '"record"') {
-				const typeKey = type.key as StringToken;
-				let hasName = false;
-				tree.node.children.forEach((kv) => {
-					if (kv.key !== null && kv.key.value === '"name"'){
-						hasName = true;
-					}
-				});
+			const typeKey = type.key as StringToken;
+			const nameMissing = this.expectedAttribute(tree.node.children, '"name"', typeKey.position, type.value.length + type.value.position);
+			if (nameMissing !== null) {
+				result.push(nameMissing);
+			}
 
-				if (!hasName) {
-					result.push(new ValidationMessage(
-						ValidationSeverity.Error,
-						typeKey.position,
-						type.value.length + type.value.position,
-						'Attribute name is missing'));
-				}
+			const fieldsMissing = this.expectedAttribute(tree.node.children, '"fields"', typeKey.position, type.value.length + type.value.position);
+			if (fieldsMissing !== null) {
+				result.push(fieldsMissing);
+			}
+		}
 
-				let hasFields = false;
-				tree.node.children.forEach((kv) => {
-					if (kv.key !== null && kv.key.value === '"fields"'){
+		return result;
+	}
+
+	expectedAttribute(attributes: KeyValuePair[], name: string, messageStart: number, messageEnd: number): ValidationMessage | null {
+		let hasFields = false;
+		attributes.forEach((kv) => {
+					if (kv.key !== null && kv.key.value === name){
 						hasFields = true;
 					}
 				});
 
-				if (!hasFields) {
-					result.push(new ValidationMessage(
-						ValidationSeverity.Error,
-						typeKey.position,
-						type.value.length + type.value.position,
-						'Attribute fields is missing'));
-				}
+		if (!hasFields) {
+			return new ValidationMessage(
+				ValidationSeverity.Error,
+				messageStart,
+				messageEnd,
+				'Attribute ' + name + ' is missing');
 		}
 
-		return result;
+		return null;
 	}
 }
