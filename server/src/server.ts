@@ -18,7 +18,7 @@ import {
 import {
   TextDocument
 } from 'vscode-languageserver-textdocument';
-import {tokenize, Token} from './parsing';
+import {tokenize, FreeTextToken} from './parsing';
 import buildTree from './syntaxtree';
 import { Validator, ExpectedAttributesValidator, ValidationSeverity } from './validation/validators';
 // import {  } from 'vscode';
@@ -188,7 +188,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // assert.equal(curr.done, false);
 
   tokens.forEach(function(tokenInfo) {
-    if (tokenInfo.token === Token.FreeText) {
+    if (tokenInfo instanceof FreeTextToken) {
       problems++;
       let diagnostic: Diagnostic = {
         severity: DiagnosticSeverity.Error,
