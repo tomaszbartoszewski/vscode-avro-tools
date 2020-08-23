@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 import { KeyValuePair, ArrayNode, Node, Tree, ArrayItem } from '../src/syntaxtree';
-import { ExpectedAttributesValidator, Validator, ValidationMessage, ValidationSeverity } from '../src/validation/validators'
+import { Validator, ValidationMessage, ValidationSeverity } from '../src/validation/validators'
+import { ExpectedAttributesValidator } from '../src/validation/expectedAttributesValidator'
 import { StringToken, Token, LeftBracketToken, RightBracketToken } from '../src/parsing';
 
 function nodeWithAttributes(...attributes: KeyValuePair[]): Node {
@@ -37,7 +38,7 @@ function keyValue(key: StringToken, value: Token | ArrayNode | null = null): Key
 	return keyValuePair;
 }
 
-describe('AttributeValidator', () => {
+describe('ExpectedAttributesValidator', () => {
 	const nodeFieldsValidator: Validator = new ExpectedAttributesValidator();
 
 	var acceptedTypes = ['"string"', '"int"', '"long"']; // TODO: check if other primitive types can be here

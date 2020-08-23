@@ -20,7 +20,8 @@ import {
 } from 'vscode-languageserver-textdocument';
 import {tokenize, FreeTextToken} from './parsing';
 import buildTree from './syntaxtree';
-import { Validator, ExpectedAttributesValidator, ValidationSeverity } from './validation/validators';
+import { Validator, ValidationSeverity } from './validation/validators';
+import { ExpectedAttributesValidator } from './validation/expectedAttributesValidator';
 // import {  } from 'vscode';
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -156,7 +157,9 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let diagnostics: Diagnostic[] = [];
 
   const validator: Validator = new ExpectedAttributesValidator();
+  console.time('validate');
   const iter = validator.validate(tree);
+  console.timeEnd('validate');
   iter.forEach((value) => {
     problems++;
     let diagnostic: Diagnostic = {
