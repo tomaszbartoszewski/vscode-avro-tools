@@ -60,6 +60,13 @@ export class ExpectedAttributesValidator implements Validator {
 
 		const typeMissing = this.expectedAttribute(node.children, '"type"', nodeStart, nodeEnd);
 
+		if (isField) {
+			const attributeMissing = this.expectedAttribute(node.children, '"name"', nodeStart, nodeEnd);
+			if (attributeMissing !== null) {
+				messageAggregator.addMessage(attributeMissing);
+			}
+		}
+
 		if (typeMissing !== null) {
 			messageAggregator.addMessage(typeMissing);
 		}
@@ -75,9 +82,8 @@ export class ExpectedAttributesValidator implements Validator {
 				if (requiredAttributes !== undefined) {
 					attributesToValidate = new Set(requiredAttributes);
 				}
-
 				if (isField) {
-					attributesToValidate.add('"name"');
+					attributesToValidate.delete('"name"');
 				}
 
 				attributesToValidate.forEach((attributeName) => {

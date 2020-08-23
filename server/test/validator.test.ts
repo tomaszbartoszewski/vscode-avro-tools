@@ -181,27 +181,30 @@ describe('AttributeValidator', () => {
 			'Attribute "fields" is missing'));
 	});
 
-	it('validate name on a field', () => {
-		const childNode = nodeWithBrackets(new LeftBracketToken('{', 42), new RightBracketToken('}', 60));
-		childNode.addChild(keyValue(new StringToken('"type"', 43), new StringToken('"string"', 51)))
+	const fieldTypes: [StringToken | Node, string][] = [[new StringToken('"string"', 51), '"string"'], [new Node(), '{}']];
+	fieldTypes.forEach(([typeValue, description]) => {
+		it('validate name on a field with type ' + description, () => {
+			const childNode = nodeWithBrackets(new LeftBracketToken('{', 42), new RightBracketToken('}', 60));
+			childNode.addChild(keyValue(new StringToken('"type"', 43), typeValue))
 
-		const children = new ArrayNode();
-		const arrayItem = new ArrayItem();
-		arrayItem.setValue(childNode);
-		children.addChild(arrayItem);
+			const children = new ArrayNode();
+			const arrayItem = new ArrayItem();
+			arrayItem.setValue(childNode);
+			children.addChild(arrayItem);
 
-		const node = nodeWithAttributes(
-			keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
-			keyValue(new StringToken('"name"', 20)),
-			keyValue(new StringToken('"fields"', 30), children),
-		);
-		const tree = new Tree(node, []);
-		const highlights = nodeFieldsValidator.validate(tree);
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], new ValidationMessage(
-			ValidationSeverity.Error,
-			43,
-			59,
-			'Attribute "name" is missing'));
+			const node = nodeWithAttributes(
+				keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
+				keyValue(new StringToken('"name"', 20)),
+				keyValue(new StringToken('"fields"', 30), children),
+			);
+			const tree = new Tree(node, []);
+			const highlights = nodeFieldsValidator.validate(tree);
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
+				42,
+				61,
+				'Attribute "name" is missing'));
+		});
 	});
 });

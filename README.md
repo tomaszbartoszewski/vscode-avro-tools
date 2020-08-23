@@ -33,7 +33,7 @@ Syntax tree only understands root node with fields. Field values must be primiti
 
 * Implementing functionality from Known Issues
 * Validating default values
-* Validating keys available in Avro
+* Validating keys available in Avro (Based on documentation other keys are correct " Attributes not defined in this document are permitted as metadata, but must not affect the format of serialized data. ")
 * Validating keys inside a node based on type
 * Validating names
 * Validating enum values
