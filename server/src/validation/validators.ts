@@ -1,5 +1,5 @@
-import { Tree } from '../syntaxtree';
-import { Token, TokenInfo } from '../parsing';
+import { Tree, KeyValuePair } from '../syntaxtree';
+import { Token, StringToken } from '../parsing';
 
 export enum ValidationSeverity {
 	Error,
@@ -55,15 +55,14 @@ export class ExpectedAttributesValidator implements Validator {
 	// }
 
 	validate(tree: Tree): ValidationMessage[] {
-		const type = tree.node.children.find(kv => kv.key !== null 
-			&& kv.key.token === Token.String && kv.key.value === '"type"');
+		const type = tree.node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
 
-		if (type !== undefined && type.value instanceof TokenInfo 
-			&& type.value.token === Token.String && type.value.value === '"record"') {
-				const typeKey = type.key as TokenInfo;
+		if (type instanceof KeyValuePair && type.value instanceof Token
+			&& type.value instanceof StringToken && type.value.value === '"record"') {
+				const typeKey = type.key as StringToken;
 				let hasName = false;
 				tree.node.children.forEach((kv) => {
-					if (kv.key !== null && kv.key.token === Token.String && kv.key.value === '"name"'){
+					if (kv.key !== null && kv.key.value === '"name"'){
 						hasName = true;
 					}
 				});
