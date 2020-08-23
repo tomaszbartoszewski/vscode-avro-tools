@@ -139,4 +139,31 @@ describe('AttributeValidator', () => {
 			15,
 			'Attribute "items" is missing'));
 	});
+
+	it('validate record nested fields', () => {
+		const childNode = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 40), new StringToken('"record"', 48)),
+			keyValue(new StringToken('"name"', 50)),
+		);
+
+		const children = new ArrayNode();
+		const arrayItem = new ArrayItem();
+		arrayItem.setValue(childNode);
+		children.addChild(arrayItem);
+
+		const node = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
+			keyValue(new StringToken('"name"', 20)),
+			keyValue(new StringToken('"fields"', 30), children),
+
+		);
+		const tree = new Tree(node, []);
+		const highlights = nodeFieldsValidator.validate(tree);
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			56,
+			'Attribute "fields" is missing'));
+	});
 });

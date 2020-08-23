@@ -1,4 +1,4 @@
-import { Tree, KeyValuePair } from '../syntaxtree';
+import { Tree, KeyValuePair, Node, ArrayNode, ArrayItem } from '../syntaxtree';
 import { Token, StringToken } from '../parsing';
 
 export enum ValidationSeverity {
@@ -20,6 +20,18 @@ export class ValidationMessage {
 	}
 }
 
+class ValidationMessageAggregator {
+	private messages: ValidationMessage[] = [];
+
+	addMessage(message: ValidationMessage) {
+		this.messages.push(message);
+	}
+
+	getAll() {
+		return this.messages;
+	}
+}
+
 export interface Validator {
 	validate(tree: Tree): ValidationMessage[];
 }
@@ -34,35 +46,52 @@ export class ExpectedAttributesValidator implements Validator {
 		]);
 
 	validate(tree: Tree): ValidationMessage[] {
-		const result: ValidationMessage[] = [];
+		const messageAggregator = new ValidationMessageAggregator();
+		this.validateNode(tree.node, messageAggregator);
+		return messageAggregator.getAll();
+	}
 
-		const nodeStart = (tree.node.leftBracket !== null) ? tree.node.leftBracket.position : 0;
-		const nodeEnd = (tree.node.rightBracket !== null)
-			? tree.node.rightBracket.position + tree.node.rightBracket.value.length
+	validateNode(node: Node, messageAggregator: ValidationMessageAggregator) {
+		const nodeStart = (node.leftBracket !== null) ? node.leftBracket.position : 0;
+		const nodeEnd = (node.rightBracket !== null)
+			? node.rightBracket.position + node.rightBracket.value.length
 			: nodeStart + 1;
-		const typeMissing = this.expectedAttribute(tree.node.children, '"type"', nodeStart, nodeEnd);
+		const typeMissing = this.expectedAttribute(node.children, '"type"', nodeStart, nodeEnd);
+
 		if (typeMissing !== null) {
-			result.push(typeMissing);
+			messageAggregator.addMessage(typeMissing);
 		}
 		else {
-			const type = tree.node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
+			const type = node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
 
 			if (type instanceof KeyValuePair && type.value instanceof StringToken) {
-				const token = type.value;
+				const token: StringToken = type.value;
 				const typeKey = type.key as StringToken;
 				const requiredAttributes = this.typeRequiredAttributes.get(token.value);
 				if (requiredAttributes !== undefined) {
 					requiredAttributes.forEach((attributeName) => {
-						const attributeMissing = this.expectedAttribute(tree.node.children, attributeName, typeKey.position, token.value.length + token.position);
+						const attributeMissing = this.expectedAttribute(node.children, attributeName, typeKey.position, token.value.length + token.position);
 						if (attributeMissing !== null) {
-							result.push(attributeMissing);
+							messageAggregator.addMessage(attributeMissing);
 						}
 					});
 				}
+
+				if (token.value === '"record"') {
+					const fieldsAttribute = node.children.find(kv => kv.key !== null && kv.key.value === '"fields"');
+					// console.log(fieldsAttribute);
+					if (fieldsAttribute instanceof KeyValuePair && fieldsAttribute.value instanceof ArrayNode) {
+						const fields: ArrayItem[] = fieldsAttribute.value.children;
+						fields.forEach((field) => {
+							if (field.value instanceof Node) {
+								// console.log('Validate node', field);
+								this.validateNode(field.value, messageAggregator);
+							}
+						});
+					}
+				}
 			}
 		}
-
-		return result;
 	}
 
 	expectedAttribute(attributes: KeyValuePair[], name: string, messageStart: number, messageEnd: number): ValidationMessage | null {
