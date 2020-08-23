@@ -106,10 +106,23 @@ export class ExpectedAttributesValidator implements Validator {
 						});
 					}
 				}
+				else if (token.value === '"array"') {
+					this.validateInLineDefinedType(node, '"items"', messageAggregator);
+				}
+				else if (token.value === '"map"') {
+					this.validateInLineDefinedType(node, '"values"', messageAggregator);
+				}
 			}
-			else if (type instanceof KeyValuePair && type.value instanceof Node) {
-				this.validateNode(type.value, messageAggregator);
-			}
+
+			this.validateInLineDefinedType(node, '"type"', messageAggregator);
+		}
+	}
+
+	validateInLineDefinedType(node: Node, fieldName: string, messageAggregator: ValidationMessageAggregator) {
+		const attribute = node.children.find(kv => kv.key !== null && kv.key.value === fieldName);
+		// console.log(attribute);
+		if (attribute instanceof KeyValuePair && attribute.value instanceof Node) {
+			this.validateNode(attribute.value, messageAggregator);
 		}
 	}
 

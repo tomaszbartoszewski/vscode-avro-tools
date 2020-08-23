@@ -229,4 +229,26 @@ describe('AttributeValidator', () => {
 			58,
 			'Attribute "items" is missing'));
 	});
+
+	[['"array"', '"items"'], ['"map"', '"values"']].forEach(([type, attribute]) => {
+		it('validate ' + type + ' complex ' + attribute, () => {
+			const typeNode = nodeWithAttributes(
+				keyValue(new StringToken('"type"', 43), new StringToken('"record"', 51)),
+				keyValue(new StringToken('"name"', 63), new StringToken('"record"', 71))
+				);
+
+			const node = nodeWithAttributes(
+				keyValue(new StringToken('"type"', 1), new StringToken(type, 8)),
+				keyValue(new StringToken(attribute, 20), typeNode)
+			);
+			const tree = new Tree(node, []);
+			const highlights = nodeFieldsValidator.validate(tree);
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
+				43,
+				59,
+				'Attribute "fields" is missing'));
+		});
+	});
 });
