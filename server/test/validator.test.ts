@@ -104,7 +104,29 @@ describe('AttributeValidator', () => {
 			ValidationSeverity.Error,
 			1,
 			16,
-			"Attribute name is missing"));
+			'Attribute name is missing'));
+	});
+	it('top level node requires fields', () => {
+		const node = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
+			keyValue(new StringToken('"name"', 20), new StringToken('"Test"', 28))
+		);
+		const tree = new Tree(node, []);
+		const highlights = nodeFieldsValidator.validate(tree);
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			1,
+			16,
+			'Attribute fields is missing'));
+	});
+	it('top level node both name and fields are missing, two errors', () => {
+		const node = nodeWithAttributes(
+			keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8))
+		);
+		const tree = new Tree(node, []);
+		const highlights = nodeFieldsValidator.validate(tree);
+		assert.equal(highlights.length, 2);
 	});
 
 // 	var needNameTypes = ['"string"', '"int"', '"long"', '"null"', '"boolean"',

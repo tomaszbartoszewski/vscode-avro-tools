@@ -55,10 +55,10 @@ export class ExpectedAttributesValidator implements Validator {
 	// }
 
 	validate(tree: Tree): ValidationMessage[] {
+		const result: ValidationMessage[] = [];
 		const type = tree.node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
 
-		if (type instanceof KeyValuePair && type.value instanceof Token
-			&& type.value instanceof StringToken && type.value.value === '"record"') {
+		if (type instanceof KeyValuePair && type.value instanceof StringToken && type.value.value === '"record"') {
 				const typeKey = type.key as StringToken;
 				let hasName = false;
 				tree.node.children.forEach((kv) => {
@@ -68,14 +68,29 @@ export class ExpectedAttributesValidator implements Validator {
 				});
 
 				if (!hasName) {
-					return [new ValidationMessage(
+					result.push(new ValidationMessage(
 						ValidationSeverity.Error,
 						typeKey.position,
 						type.value.length + type.value.position,
-						"Attribute name is missing")];
+						'Attribute name is missing'));
+				}
+
+				let hasFields = false;
+				tree.node.children.forEach((kv) => {
+					if (kv.key !== null && kv.key.value === '"fields"'){
+						hasFields = true;
+					}
+				});
+
+				if (!hasFields) {
+					result.push(new ValidationMessage(
+						ValidationSeverity.Error,
+						typeKey.position,
+						type.value.length + type.value.position,
+						'Attribute fields is missing'));
 				}
 		}
 
-		return [];
+		return result;
 	}
 }
