@@ -28,6 +28,9 @@ export class ExpectedAttributesValidator implements Validator {
 	private typeRequiredAttributes: Map<string, string[]> =
 		new Map([
 			['"record"', ['"name"', '"fields"']],
+			['"enum"', ['"name"', '"symbols"']],
+			['"fixed"', ['"name"', '"size"']],
+			['"array"', ['"items"']],
 		]);
 
 	validate(tree: Tree): ValidationMessage[] {
@@ -44,7 +47,7 @@ export class ExpectedAttributesValidator implements Validator {
 		else {
 			const type = tree.node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
 
-			if (type instanceof KeyValuePair && type.value instanceof StringToken && type.value.value === '"record"') {
+			if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 				const token = type.value;
 				const typeKey = type.key as StringToken;
 				const requiredAttributes = this.typeRequiredAttributes.get(token.value);
