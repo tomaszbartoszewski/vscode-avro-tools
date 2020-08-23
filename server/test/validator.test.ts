@@ -170,10 +170,7 @@ describe('AttributeValidator', () => {
 			keyValue(new StringToken('"name"', 50)),
 		);
 
-		const children = new ArrayNode();
-		const arrayItem = new ArrayItem();
-		arrayItem.setValue(childNode);
-		children.addChild(arrayItem);
+		const children = arrayNodeWithValues(childNode);
 
 		const node = nodeWithAttributes(
 			keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
@@ -201,10 +198,7 @@ describe('AttributeValidator', () => {
 			const childNode = nodeWithBrackets(new LeftBracketToken('{', 42), new RightBracketToken('}', 60));
 			childNode.addChild(keyValue(new StringToken('"type"', 43), typeValue))
 
-			const children = new ArrayNode();
-			const arrayItem = new ArrayItem();
-			arrayItem.setValue(childNode);
-			children.addChild(arrayItem);
+			const children = arrayNodeWithValues(childNode);
 
 			const node = nodeWithAttributes(
 				keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
