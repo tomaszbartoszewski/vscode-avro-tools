@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {tokenize, TokenInfo} from '../src/parsing';
+import {tokenize, Token} from '../src/parsing';
 import {buildTree, ArrayNode, ArrayItem, Node, KeyValuePair, Tree} from '../src/syntaxtree';
 
 function countTokensInNode(node: any): number {
@@ -7,7 +7,7 @@ function countTokensInNode(node: any): number {
 		return 0;
 	}
 
-	if (node instanceof TokenInfo) {
+	if (node instanceof Token) {
 		return 1;
 	}
 	else if (node instanceof ArrayNode) {
