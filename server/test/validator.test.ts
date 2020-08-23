@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { KeyValuePair, ArrayNode, Node, Tree } from '../src/syntaxtree';
 import { ExpectedAttributesValidator, Validator, ValidationMessage, ValidationSeverity } from '../src/validation/validators'
-import { TokenInfo, Token } from '../src/parsing';
+import { StringToken, Token } from '../src/parsing';
 
 // interface ValidatorInterface {
 // 	validate(item: any):  Generator<number, string, boolean>;
@@ -62,7 +62,7 @@ function nodeWithAttributes(...attributes: KeyValuePair[]): Node {
 	return node;
 }
 
-function keyValue(key: TokenInfo, value: TokenInfo | ArrayNode): KeyValuePair {
+function keyValue(key: StringToken, value: Token | ArrayNode): KeyValuePair {
 	const keyValuePair = new KeyValuePair();
 	keyValuePair.setKey(key);
 	keyValuePair.setValue(value);
@@ -86,7 +86,7 @@ describe('AttributeValidator', () => {
 	acceptedTypes.forEach((type) => {
 		it('node on highest level with only type is correct', () => {
 			const node = nodeWithAttributes(
-				keyValue(new TokenInfo(Token.String, '"type"', 1), new TokenInfo(Token.String, type, 8)));
+				keyValue(new StringToken('"type"', 1), new StringToken(type, 8)));
 			const tree = new Tree(node, []);
 			const highlights = nodeFieldsValidator.validate(tree);
 			assert.equal(highlights.length, 0);
@@ -94,8 +94,8 @@ describe('AttributeValidator', () => {
 	});
 	it('top level node requires name', () => {
 		const node = nodeWithAttributes(
-			keyValue(new TokenInfo(Token.String, '"type"', 1), new TokenInfo(Token.String, '"record"', 8)),
-			keyValue(new TokenInfo(Token.String, '"fields"', 20), new ArrayNode())
+			keyValue(new StringToken('"type"', 1), new StringToken('"record"', 8)),
+			keyValue(new StringToken('"fields"', 20), new ArrayNode())
 		);
 		const tree = new Tree(node, []);
 		const highlights = nodeFieldsValidator.validate(tree);
