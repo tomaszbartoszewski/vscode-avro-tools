@@ -22,10 +22,14 @@ export class ValidationMessage {
 
 export interface Validator {
 	validate(tree: Tree): ValidationMessage[];
-
 }
 
 export class ExpectedAttributesValidator implements Validator {
+	private typeRequiredAttributes: Map<string, string[]> =
+		new Map([
+			['"record"', ['"name"', '"fields"']],
+		]);
+
 	validate(tree: Tree): ValidationMessage[] {
 		const result: ValidationMessage[] = [];
 
@@ -41,15 +45,16 @@ export class ExpectedAttributesValidator implements Validator {
 			const type = tree.node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
 
 			if (type instanceof KeyValuePair && type.value instanceof StringToken && type.value.value === '"record"') {
+				const token = type.value;
 				const typeKey = type.key as StringToken;
-				const nameMissing = this.expectedAttribute(tree.node.children, '"name"', typeKey.position, type.value.length + type.value.position);
-				if (nameMissing !== null) {
-					result.push(nameMissing);
-				}
-
-				const fieldsMissing = this.expectedAttribute(tree.node.children, '"fields"', typeKey.position, type.value.length + type.value.position);
-				if (fieldsMissing !== null) {
-					result.push(fieldsMissing);
+				const requiredAttributes = this.typeRequiredAttributes.get(token.value);
+				if (requiredAttributes !== undefined) {
+					requiredAttributes.forEach((attributeName) => {
+						const attributeMissing = this.expectedAttribute(tree.node.children, attributeName, typeKey.position, token.value.length + token.position);
+						if (attributeMissing !== null) {
+							result.push(attributeMissing);
+						}
+					});
 				}
 			}
 		}
