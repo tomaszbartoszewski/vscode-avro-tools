@@ -1,0 +1,22 @@
+import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
+import { Tree, Node } from '../syntaxtree';
+
+export class TextSeparatorsValidator implements Validator {
+	validate(tree: Tree): ValidationMessage[] {
+		const messageAggregator = new ValidationMessageAggregator();
+		this.validateNode(tree.node, messageAggregator);
+		return messageAggregator.getAll();
+	}
+
+	validateNode(node: Node, messageAggregator: ValidationMessageAggregator) {
+		node.children.forEach((attribute) => {
+			if (attribute.colon === null) {
+				messageAggregator.addMessage(new ValidationMessage(
+					ValidationSeverity.Error,
+					attribute.key?.position ?? 0,
+					17,
+					'Missing ":" between a key and a value'));
+			}
+		});
+	}
+}
