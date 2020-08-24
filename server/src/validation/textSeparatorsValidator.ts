@@ -1,5 +1,5 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
-import { Tree, ObjectNode } from '../syntaxTree';
+import { Tree, ObjectNode, ArrayNode } from '../syntaxTree';
 
 export class TextSeparatorsValidator implements Validator {
 	validate(tree: Tree): ValidationMessage[] {
@@ -29,6 +29,10 @@ export class TextSeparatorsValidator implements Validator {
 			if (attribute.value instanceof ObjectNode) {
 				this.validateNode(attribute.value, messageAggregator);
 			}
+
+			if (attribute.value instanceof ArrayNode) {
+				this.validateArrayNode(attribute.value, messageAggregator);
+			}
 		});
 
 		if (node.leftBracket !== null && node.rightBracket === null) {
@@ -38,5 +42,17 @@ export class TextSeparatorsValidator implements Validator {
 				node.getEndPosition(),
 				'Missing closing bracket "}"'));
 		}
+	}
+
+	validateArrayNode(arrayNode: ArrayNode, messageAggregator: ValidationMessageAggregator) {
+		arrayNode.items.forEach((item, index) => {
+			if (index < arrayNode.items.length - 1) {
+				messageAggregator.addMessage(new ValidationMessage(
+					ValidationSeverity.Error,
+					item.getStartPosition(),
+					item.getEndPosition(),
+					'Missing "," between array items'));
+			}
+		});
 	}
 }
