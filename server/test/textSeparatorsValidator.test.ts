@@ -40,4 +40,20 @@ describe('TextSeparatorsValidator', () => {
 			17,
 			'Missing "," between attributes'));
 	});
+
+	it('validate returns error when closing bracket is missing', () => {
+		const node = objectNode(
+			new LeftBracketToken('{', 0),
+			null,
+			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), new StringToken('"string"', 9), null));
+
+		const highlights = validator.validate(new Tree(node, []));
+
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			0,
+			17,
+			'Missing closing bracket "}"'));
+	});
 });
