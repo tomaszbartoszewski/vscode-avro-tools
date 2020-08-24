@@ -13,20 +13,20 @@ export class Tree {
 
 export class ObjectNode implements HighlightRange {
 	leftBracket: LeftBracketToken | null;
-	children: KeyValuePair[];
+	attributes: KeyValuePair[];
 	rightBracket: RightBracketToken | null;
 
 	constructor() {
 		this.leftBracket = null;
-		this.children = [];
+		this.attributes = [];
 		this.rightBracket = null;
 	}
 
 	getStartPosition(): number {
 		return this.leftBracket?.getStartPosition()
 			?? (
-				this.children.length > 0
-					? this.children[0].getStartPosition()
+				this.attributes.length > 0
+					? this.attributes[0].getStartPosition()
 					: this.rightBracket?.getStartPosition()
 			)
 			?? 0;
@@ -35,8 +35,8 @@ export class ObjectNode implements HighlightRange {
 	getEndPosition(): number {
 		return this.rightBracket?.getEndPosition()
 		?? (
-			this.children.length > 0
-				? this.children[this.children.length - 1].getEndPosition()
+			this.attributes.length > 0
+				? this.attributes[this.attributes.length - 1].getEndPosition()
 				: this.leftBracket?.getEndPosition()
 		)
 		?? 0;
@@ -46,8 +46,8 @@ export class ObjectNode implements HighlightRange {
 		this.leftBracket = leftBracket;
 	}
 
-	addChild(keyValuePair: KeyValuePair) {
-		this.children.push(keyValuePair);
+	addAttribute(keyValuePair: KeyValuePair) {
+		this.attributes.push(keyValuePair);
 	}
 
 	setRightBracket(rightBracket: RightBracketToken) {
@@ -103,20 +103,20 @@ export class KeyValuePair implements HighlightRange {
 
 export class ArrayNode implements HighlightRange {
 	leftBracket: LeftSquareBracketToken | null;
-	children: ArrayItem[];
+	items: ArrayItem[];
 	rightBracket: RightSquareBracketToken | null;
 
 	constructor() {
 		this.leftBracket = null;
-		this.children = [];
+		this.items = [];
 		this.rightBracket = null;
 	}
 
 	getStartPosition(): number {
 		return this.leftBracket?.getStartPosition()
 			?? (
-				this.children.length > 0
-					? this.children[0].getStartPosition()
+				this.items.length > 0
+					? this.items[0].getStartPosition()
 					: this.rightBracket?.getStartPosition()
 			)
 			?? 0;
@@ -125,8 +125,8 @@ export class ArrayNode implements HighlightRange {
 	getEndPosition(): number {
 		return this.rightBracket?.getEndPosition()
 		?? (
-			this.children.length > 0
-				? this.children[this.children.length - 1].getEndPosition()
+			this.items.length > 0
+				? this.items[this.items.length - 1].getEndPosition()
 				: this.leftBracket?.getEndPosition()
 		)
 		?? 0;
@@ -136,8 +136,8 @@ export class ArrayNode implements HighlightRange {
 		this.leftBracket = leftBracket;
 	}
 
-	addChild(arrayItem: ArrayItem) {
-		this.children.push(arrayItem);
+	addItem(arrayItem: ArrayItem) {
+		this.items.push(arrayItem);
 	}
 
 	setRightBracket(rightBracket: RightSquareBracketToken) {

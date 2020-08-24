@@ -20,7 +20,7 @@ function countTokensInNode(node: any): number {
 		if (node.rightBracket !== null) {
 			count++;
 		}
-		node.children.forEach(function(n) {
+		node.items.forEach(function(n) {
 			count += countTokensInNode(n);
 		});
 		return count;
@@ -40,7 +40,7 @@ function countTokensInNode(node: any): number {
 		if (node.rightBracket !== null) {
 			count++;
 		}
-		node.children.forEach(function(n) {
+		node.attributes.forEach(function(n) {
 			count += countTokensInNode(n);
 		});
 		return count;

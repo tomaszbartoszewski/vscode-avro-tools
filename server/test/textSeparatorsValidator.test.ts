@@ -12,7 +12,7 @@ describe('TextSeparatorsValidator', () => {
 		const keyValuePair = new KeyValuePair();
 		keyValuePair.setKey(new StringToken('"type"', 1));
 		keyValuePair.setValue(new StringToken('"string"', 9));
-		node.addChild(keyValuePair);
+		node.addAttribute(keyValuePair);
 		node.setRightBracket(new RightBracketToken('}', 18))
 
 		const highlights = validator.validate(new Tree(node, []));

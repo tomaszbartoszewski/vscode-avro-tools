@@ -9,7 +9,7 @@ export class TextSeparatorsValidator implements Validator {
 	}
 
 	validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator) {
-		node.children.forEach((attribute) => {
+		node.attributes.forEach((attribute) => {
 			if (attribute.colon === null) {
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,

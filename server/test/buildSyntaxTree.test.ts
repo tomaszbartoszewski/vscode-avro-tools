@@ -93,7 +93,7 @@ class TokenContainer {
 describe('Build Tree', () => {
 	it('should return empty tree', () => {
 		const result = buildTree([]).node;
-		assert.equal(result.children.length, 0);
+		assert.equal(result.attributes.length, 0);
 	});
 	it('should return node with only brackets', () => {
 		const tokens = new TokenContainer()
@@ -112,8 +112,8 @@ describe('Build Tree', () => {
 			.getTokens();
 		const result = buildTree(tokens).node;
 		assert.equal(result.leftBracket, tokens[0]);
-		assert.equal(result.children.length, 1);
-		const keyValue = result.children[0];
+		assert.equal(result.attributes.length, 1);
+		const keyValue = result.attributes[0];
 		assert.equal(keyValue.key, tokens[1]);
 		assert.equal(keyValue.colon, tokens[2]);
 		assert.equal(keyValue.value, tokens[3]);
@@ -128,12 +128,12 @@ describe('Build Tree', () => {
 			.getTokens();
 		const result = buildTree(tokens).node;
 		assert.equal(result.leftBracket, tokens[0]);
-		assert.equal(result.children.length, 2);
-		const keyValueOne = result.children[0];
+		assert.equal(result.attributes.length, 2);
+		const keyValueOne = result.attributes[0];
 		assert.equal(keyValueOne.key, tokens[1]);
 		assert.equal(keyValueOne.colon, tokens[2]);
 		assert.equal(keyValueOne.value, tokens[3]);
-		const keyValueTwo = result.children[1];
+		const keyValueTwo = result.attributes[1];
 		assert.equal(keyValueTwo.key, tokens[4]);
 		assert.equal(keyValueTwo.colon, tokens[5]);
 		assert.equal(keyValueTwo.value, tokens[6]);
@@ -161,7 +161,7 @@ describe('Build Tree', () => {
 				.addString('"type"').addColon()
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.key, tokens[1]);
 		assert.equal(result.colon, tokens[2]);
 		assert.equal(result.value, null);
@@ -172,7 +172,7 @@ describe('Build Tree', () => {
 				.addString('"type"').addString('"int"')
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.key, tokens[1]);
 		assert.equal(result.colon, null);
 		assert.equal(result.value, tokens[2]);
@@ -183,7 +183,7 @@ describe('Build Tree', () => {
 				.addColon().addString('"int"')
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.key, null);
 		assert.equal(result.colon, tokens[1]);
 		assert.equal(result.value, tokens[2]);
@@ -196,13 +196,13 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 2);
-		const keyValueOne = result.children[0];
+		assert.equal(result.attributes.length, 2);
+		const keyValueOne = result.attributes[0];
 		assert.equal(keyValueOne.key, tokens[1]);
 		assert.equal(keyValueOne.colon, tokens[2]);
 		assert.equal(keyValueOne.value, tokens[3]);
 		assert.equal(keyValueOne.comma, tokens[4]);
-		const keyValueTwo = result.children[1];
+		const keyValueTwo = result.attributes[1];
 		assert.equal(keyValueTwo.key, tokens[5]);
 		assert.equal(keyValueTwo.colon, tokens[6]);
 		assert.equal(keyValueTwo.value, tokens[7]);
@@ -217,10 +217,10 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 3);
-		assert.equal(result.children[0].comma, tokens[1]);
-		assert.equal(result.children[1].comma, tokens[2]);
-		assert.equal(result.children[2].comma, tokens[3]);
+		assert.equal(result.attributes.length, 3);
+		assert.equal(result.attributes[0].comma, tokens[1]);
+		assert.equal(result.attributes[1].comma, tokens[2]);
+		assert.equal(result.attributes[2].comma, tokens[3]);
 	});
 	it('should return child with array value', () => {
 		const tokens = new TokenContainer()
@@ -233,17 +233,17 @@ describe('Build Tree', () => {
 			.getTokens();
 		const result = buildTree(tokens).node;
 		assert.equal(result.leftBracket, tokens[0]);
-		assert.equal(result.children.length, 1);
-		const keyValue = result.children[0];
+		assert.equal(result.attributes.length, 1);
+		const keyValue = result.attributes[0];
 		assert.equal(keyValue.key, tokens[1]);
 		assert.equal(keyValue.colon, tokens[2]);
 		const array = keyValue.value as ArrayNode;
 		assert.equal(array.leftBracket, tokens[3]);
-		assert.equal(array.children.length, 2);
-		let arrayItem = array.children[0] as ArrayItem;
+		assert.equal(array.items.length, 2);
+		let arrayItem = array.items[0] as ArrayItem;
 		assert.equal(arrayItem.value, tokens[4]);
 		assert.equal(arrayItem.comma, tokens[5]);
-		arrayItem = array.children[1] as ArrayItem;
+		arrayItem = array.items[1] as ArrayItem;
 		assert.equal(arrayItem.value, tokens[6]);
 		assert.equal(array.rightBracket, tokens[7]);
 		assert.equal(keyValue.comma, null);
@@ -258,11 +258,11 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 1);
-		const innerNode = result.children[0].value as ObjectNode;
+		assert.equal(result.attributes.length, 1);
+		const innerNode = result.attributes[0].value as ObjectNode;
 		assert.equal(innerNode.leftBracket, tokens[3]);
-		assert.equal(innerNode.children.length, 1);
-		const keyValue = innerNode.children[0];
+		assert.equal(innerNode.attributes.length, 1);
+		const keyValue = innerNode.attributes[0];
 		assert.equal(keyValue.key, tokens[4]);
 		assert.equal(keyValue.colon, tokens[5]);
 		assert.equal(keyValue.value, tokens[6]);
@@ -279,10 +279,10 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 1);
-		const arrayNode = result.children[0].value as ArrayNode;
-		assert.equal(arrayNode.children.length, 1);
-		assert.equal(arrayNode.children[0].value instanceof ObjectNode, true);
+		assert.equal(result.attributes.length, 1);
+		const arrayNode = result.attributes[0].value as ArrayNode;
+		assert.equal(arrayNode.items.length, 1);
+		assert.equal(arrayNode.items[0].value instanceof ObjectNode, true);
 	});
 	it('should return node inside an array, missing record closing bracket', () => {
 		const tokens = new TokenContainer()
@@ -294,10 +294,10 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 1);
-		const arrayNode = result.children[0].value as ArrayNode;
-		assert.equal(arrayNode.children.length, 1);
-		assert.equal(arrayNode.children[0].value instanceof ObjectNode, true);
+		assert.equal(result.attributes.length, 1);
+		const arrayNode = result.attributes[0].value as ArrayNode;
+		assert.equal(arrayNode.items.length, 1);
+		assert.equal(arrayNode.items[0].value instanceof ObjectNode, true);
 	});
 	it('should return an array inside an array', () => {
 		const tokens = new TokenContainer()
@@ -310,10 +310,10 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 1);
-		const arrayNode = result.children[0].value as ArrayNode;
-		assert.equal(arrayNode.children.length, 1);
-		assert.equal(arrayNode.children[0].value instanceof ArrayNode, true);
+		assert.equal(result.attributes.length, 1);
+		const arrayNode = result.attributes[0].value as ArrayNode;
+		assert.equal(arrayNode.items.length, 1);
+		assert.equal(arrayNode.items[0].value instanceof ArrayNode, true);
 	});
 	it('should return integer value', () => {
 		const tokens = new TokenContainer()
@@ -321,7 +321,7 @@ describe('Build Tree', () => {
 				.addString('"default"').addColon().addInteger('123')
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.value, tokens[3]);
 	});
 	it('should return precision number value', () => {
@@ -330,7 +330,7 @@ describe('Build Tree', () => {
 				.addString('"default"').addColon().addPrecisionNumber('123.45')
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.value, tokens[3]);
 	});
 	it('should return null value', () => {
@@ -339,7 +339,7 @@ describe('Build Tree', () => {
 				.addString('"default"').addColon().addNull()
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.value, tokens[3]);
 	});
 	it('should return bool value', () => {
@@ -348,7 +348,7 @@ describe('Build Tree', () => {
 				.addString('"default"').addColon().addBool(true)
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.value, tokens[3]);
 	});
 	it('should return after last matching closed bracket everything is in outside node', () => {
@@ -371,10 +371,10 @@ describe('Build Tree', () => {
 			.addRightBracket()
 			.getTokens();
 		const result = buildTree(tokens).node;
-		assert.equal(result.children.length, 1);
-		const arrayNode = result.children[0].value as ArrayNode;
-		assert.equal(arrayNode.children.length, 1);
-		assert.equal(arrayNode.children[0].value, tokens[4]);
+		assert.equal(result.attributes.length, 1);
+		const arrayNode = result.attributes[0].value as ArrayNode;
+		assert.equal(arrayNode.items.length, 1);
+		assert.equal(arrayNode.items[0].value, tokens[4]);
 	});
 	it('should return free text value', () => {
 		const tokens = new TokenContainer()
@@ -382,7 +382,7 @@ describe('Build Tree', () => {
 				.addString('"default"').addColon().addFreeText('wrong')
 			.addRightBracket()
 			.getTokens();
-		const result = buildTree(tokens).node.children[0];
+		const result = buildTree(tokens).node.attributes[0];
 		assert.equal(result.value, tokens[3]);
 	});
 });

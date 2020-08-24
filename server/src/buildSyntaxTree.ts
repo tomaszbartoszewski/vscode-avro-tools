@@ -53,7 +53,7 @@ function getNode(tokens: Token[]): [ObjectNode, number] {
 			movedForward = true;
 		}
 		if (movedForward) {
-			node.addChild(keyValuePair);
+			node.addAttribute(keyValuePair);
 		}
 	}
 	return [node, position];
@@ -113,7 +113,7 @@ function getArray(tokens: Token[]): [ArrayNode, number] {
 			movedForward = true;
 		}
 		if (movedForward) {
-			result.addChild(arrayItem);
+			result.addItem(arrayItem);
 		}
 	}
 	return [result, position];

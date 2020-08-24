@@ -39,7 +39,7 @@ function objectNode(leftBracket: LeftBracketToken | null, rightBracket: RightBra
 		objectNode.setRightBracket(rightBracket);
 	}
 	children.forEach((keyValuePair) => {
-		objectNode.addChild(keyValuePair);
+		objectNode.addAttribute(keyValuePair);
 	});
 	return objectNode;
 }
@@ -53,7 +53,7 @@ function arrayNode(leftBracket: LeftSquareBracketToken | null, rightBracket: Rig
 		objectNode.setRightBracket(rightBracket);
 	}
 	children.forEach((keyValuePair) => {
-		objectNode.addChild(keyValuePair);
+		objectNode.addItem(keyValuePair);
 	});
 	return objectNode;
 }

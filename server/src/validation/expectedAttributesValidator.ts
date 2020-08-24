@@ -25,18 +25,18 @@ export class ExpectedAttributesValidator implements Validator {
 			: nodeStart + 1;
 
 		if (isField) {
-			const attributeMissing = this.expectedAttribute(node.children, '"name"', nodeStart, nodeEnd);
+			const attributeMissing = this.expectedAttribute(node.attributes, '"name"', nodeStart, nodeEnd);
 			if (attributeMissing !== null) {
 				messageAggregator.addMessage(attributeMissing);
 			}
 		}
 
-		const typeMissing = this.expectedAttribute(node.children, '"type"', nodeStart, nodeEnd);
+		const typeMissing = this.expectedAttribute(node.attributes, '"type"', nodeStart, nodeEnd);
 		if (typeMissing !== null) {
 			messageAggregator.addMessage(typeMissing);
 		}
 		else {
-			const type = node.children.find(kv => kv.key !== null && kv.key.value === '"type"');
+			const type = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 
 			if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 				const token: StringToken = type.value;
@@ -52,17 +52,17 @@ export class ExpectedAttributesValidator implements Validator {
 				}
 
 				attributesToValidate.forEach((attributeName) => {
-					const attributeMissing = this.expectedAttribute(node.children, attributeName, type.getStartPosition(), type.getEndPosition());
+					const attributeMissing = this.expectedAttribute(node.attributes, attributeName, type.getStartPosition(), type.getEndPosition());
 					if (attributeMissing !== null) {
 						messageAggregator.addMessage(attributeMissing);
 					}
 				});
 
 				if (token.value === '"record"') {
-					const fieldsAttribute = node.children.find(kv => kv.key !== null && kv.key.value === '"fields"');
+					const fieldsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"fields"');
 					// console.log(fieldsAttribute);
 					if (fieldsAttribute instanceof KeyValuePair && fieldsAttribute.value instanceof ArrayNode) {
-						const fields: ArrayItem[] = fieldsAttribute.value.children;
+						const fields: ArrayItem[] = fieldsAttribute.value.items;
 						fields.forEach((field) => {
 							if (field.value instanceof ObjectNode) {
 								// console.log('Validate node', field);
@@ -84,13 +84,13 @@ export class ExpectedAttributesValidator implements Validator {
 	}
 
 	validateInLineDefinedType(node: ObjectNode, fieldName: string, messageAggregator: ValidationMessageAggregator) {
-		const attribute = node.children.find(kv => kv.key !== null && kv.key.value === fieldName);
+		const attribute = node.attributes.find(kv => kv.key !== null && kv.key.value === fieldName);
 		// console.log(attribute);
 		if (attribute instanceof KeyValuePair && attribute.value instanceof ObjectNode) {
 			this.validateNode(attribute.value, messageAggregator);
 		}
 		else if (attribute instanceof KeyValuePair && attribute.value instanceof ArrayNode) { // union
-			const types: ArrayItem[] = attribute.value.children;
+			const types: ArrayItem[] = attribute.value.items;
 			// console.log(types);
 			types.forEach((type) => {
 				if (type.value instanceof ObjectNode) {

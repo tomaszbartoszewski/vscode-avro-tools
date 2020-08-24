@@ -7,7 +7,7 @@ import { StringToken, Token, LeftBracketToken, RightBracketToken } from '../src/
 function nodeWithAttributes(...attributes: KeyValuePair[]): ObjectNode {
 	const node = new ObjectNode();
 	attributes.forEach((attribute) => {
-		node.addChild(attribute);
+		node.addAttribute(attribute);
 	});
 	return node;
 }
@@ -24,12 +24,12 @@ function arrayNodeWithValues(...values: (Token|ObjectNode)[]): ArrayNode {
 	values.forEach((attribute) => {
 		const arrayItem = new ArrayItem();
 		arrayItem.setValue(attribute);
-		arrayNode.addChild(arrayItem);
+		arrayNode.addItem(arrayItem);
 	});
 	return arrayNode;
 }
 
-function keyValue(key: StringToken, value: Token | ArrayNode | null = null): KeyValuePair {
+function keyValue(key: StringToken, value: Token | ObjectNode | ArrayNode | null = null): KeyValuePair {
 	const keyValuePair = new KeyValuePair();
 	keyValuePair.setKey(key);
 	if (value !== null) {
@@ -197,7 +197,7 @@ describe('ExpectedAttributesValidator', () => {
 	fieldTypes.forEach(([typeValue, description]) => {
 		it('validate name on a field with type ' + description, () => {
 			const childNode = nodeWithBrackets(new LeftBracketToken('{', 42), new RightBracketToken('}', 60));
-			childNode.addChild(keyValue(new StringToken('"type"', 43), typeValue))
+			childNode.addAttribute(keyValue(new StringToken('"type"', 43), typeValue))
 
 			const children = arrayNodeWithValues(childNode);
 
