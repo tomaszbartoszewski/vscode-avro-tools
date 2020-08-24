@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { Tree } from '../src/syntaxTree';
-import { LeftBracketToken, StringToken, RightBracketToken, ColonToken, LeftSquareBracketToken, RightSquareBracketToken } from '../src/tokens';
+import { LeftBracketToken, StringToken, RightBracketToken, ColonToken, LeftSquareBracketToken, RightSquareBracketToken, CommaToken } from '../src/tokens';
 import { TextSeparatorsValidator } from '../src/validation/textSeparatorsValidator'
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
 import { objectNode, keyValuePair, arrayNode, arrayItem } from './syntaxTreeUtils';
@@ -147,5 +147,25 @@ describe('TextSeparatorsValidator', () => {
 	
 			assert.equal(highlights.length, 1);
 		});
+	});
+
+	it('validate with all correct separators', () => {
+		const childNode = arrayNode(
+			new LeftSquareBracketToken('[', 9),
+			new RightSquareBracketToken(']', 30),
+			arrayItem(new StringToken('null', 10), new CommaToken(',', 14)),
+			arrayItem(new StringToken('"string"', 18), null),
+		);
+
+		const node = objectNode(
+			new LeftBracketToken('{', 0),
+			new RightBracketToken('}', 32),
+			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, new CommaToken(',', 31)),
+			keyValuePair(new StringToken('"name"', 35), new ColonToken(':', 41), new StringToken('"test"', 42), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+
+		assert.equal(highlights.length, 0);
 	});
 });

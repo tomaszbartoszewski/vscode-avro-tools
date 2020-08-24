@@ -18,7 +18,7 @@ export class TextSeparatorsValidator implements Validator {
 					'Missing ":" between a key and a value'));
 			}
 
-			if (index < node.attributes.length - 1) {
+			if (index < node.attributes.length - 1 && attribute.comma === null) {
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.getStartPosition(),
@@ -46,7 +46,7 @@ export class TextSeparatorsValidator implements Validator {
 
 	validateArrayNode(arrayNode: ArrayNode, messageAggregator: ValidationMessageAggregator) {
 		arrayNode.items.forEach((item, index) => {
-			if (index < arrayNode.items.length - 1) {
+			if (index < arrayNode.items.length - 1 && item.comma === null) {
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					item.getStartPosition(),
