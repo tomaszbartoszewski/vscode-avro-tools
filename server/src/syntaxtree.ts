@@ -1,16 +1,16 @@
 import { Token, LeftBracketToken, RightBracketToken, StringToken, ColonToken, CommaToken, LeftSquareBracketToken, RightSquareBracketToken, IntegerToken, PrecisionNumberToken, BoolToken, NullToken, FreeTextToken } from './parsing';
 
 export class Tree {
-	node: Node;
+	node: ObjectNode;
 	outside: Token[];
 
-	constructor(node: Node, outside: Token[]) {
+	constructor(node: ObjectNode, outside: Token[]) {
 		this.node = node;
 		this.outside = outside;
 	}
 }
 
-export class Node {
+export class ObjectNode {
 	leftBracket: LeftBracketToken | null;
 	children: KeyValuePair[];
 	rightBracket: RightBracketToken | null;
@@ -37,7 +37,7 @@ export class Node {
 export class KeyValuePair {
 	key: StringToken | null;
 	colon: ColonToken | null;
-	value: Token | Node | ArrayNode | null;
+	value: Token | ObjectNode | ArrayNode | null;
 	comma: CommaToken | null;
 
 	constructor() {
@@ -55,7 +55,7 @@ export class KeyValuePair {
 		this.colon = colon;
 	}
 
-	setValue(value: Token | Node | ArrayNode) {
+	setValue(value: Token | ObjectNode | ArrayNode) {
 		this.value = value;
 	}
 
@@ -89,7 +89,7 @@ export class ArrayNode {
 }
 
 export class ArrayItem {
-	value: Token | Node | ArrayNode | null;
+	value: Token | ObjectNode | ArrayNode | null;
 	comma: CommaToken | null;
 
 	constructor() {
@@ -97,7 +97,7 @@ export class ArrayItem {
 		this.comma = null;
 	}
 
-	setValue(value: Token | Node | ArrayNode) {
+	setValue(value: Token | ObjectNode | ArrayNode) {
 		this.value = value;
 	}
 
@@ -108,7 +108,7 @@ export class ArrayItem {
 
 export function buildTree(tokens: Token[]): Tree {
 	if (tokens.length === 0) {
-		return new Tree(new Node(), []);
+		return new Tree(new ObjectNode(), []);
 	}
 
 	const [node, move] = getNode(tokens);
@@ -116,9 +116,9 @@ export function buildTree(tokens: Token[]): Tree {
 	return new Tree(node, tokens.slice(move));
 }
 
-function getNode(tokens: Token[]): [Node, number] {
+function getNode(tokens: Token[]): [ObjectNode, number] {
 	let position = 0;
-	const node = new Node();
+	const node = new ObjectNode();
 
 	if (tokens[position] instanceof LeftBracketToken) {
 		node.setLeftBracket(tokens[position]);
@@ -164,7 +164,7 @@ function getNode(tokens: Token[]): [Node, number] {
 	return [node, position];
 }
 
-function getValue(tokens: Token[], isArray: boolean = false): [Token | Node | ArrayNode | null, number] {
+function getValue(tokens: Token[], isArray: boolean = false): [Token | ObjectNode | ArrayNode | null, number] {
 	const position = 0;
 
 	if (isArray && tokens[position] instanceof ColonToken) {

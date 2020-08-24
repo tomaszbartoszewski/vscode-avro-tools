@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Node, KeyValuePair, Tree } from '../src/syntaxtree';
+import { ObjectNode, KeyValuePair, Tree } from '../src/syntaxtree';
 import { LeftBracketToken, StringToken, RightBracketToken } from '../src/parsing';
 import { TextSeparatorsValidator } from '../src/validation/textSeparatorsValidator'
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
@@ -7,7 +7,7 @@ import { ValidationMessage, ValidationSeverity } from '../src/validation/validat
 describe('TextSeparatorsValidator', () => {
 	const validator = new TextSeparatorsValidator();
 	it('validate returns error when colon is missing', () => {
-		const node = new Node();
+		const node = new ObjectNode();
 		node.setLeftBracket(new LeftBracketToken('{', 0));
 		const keyValuePair = new KeyValuePair();
 		keyValuePair.setKey(new StringToken('"type"', 1));

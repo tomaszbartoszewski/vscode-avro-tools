@@ -1,5 +1,5 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
-import { Tree, Node } from '../syntaxtree';
+import { Tree, ObjectNode } from '../syntaxtree';
 
 export class TextSeparatorsValidator implements Validator {
 	validate(tree: Tree): ValidationMessage[] {
@@ -8,7 +8,7 @@ export class TextSeparatorsValidator implements Validator {
 		return messageAggregator.getAll();
 	}
 
-	validateNode(node: Node, messageAggregator: ValidationMessageAggregator) {
+	validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator) {
 		node.children.forEach((attribute) => {
 			if (attribute.colon === null) {
 				messageAggregator.addMessage(new ValidationMessage(

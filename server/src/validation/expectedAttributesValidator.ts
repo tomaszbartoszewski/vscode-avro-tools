@@ -1,4 +1,4 @@
-import { Tree, KeyValuePair, Node, ArrayNode, ArrayItem } from '../syntaxtree';
+import { Tree, KeyValuePair, ObjectNode, ArrayNode, ArrayItem } from '../syntaxtree';
 import { StringToken } from '../parsing';
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
 
@@ -18,7 +18,7 @@ export class ExpectedAttributesValidator implements Validator {
 		return messageAggregator.getAll();
 	}
 
-	validateNode(node: Node, messageAggregator: ValidationMessageAggregator, isField: boolean = false) {
+	validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean = false) {
 		const nodeStart = (node.leftBracket !== null) ? node.leftBracket.position : 0;
 		const nodeEnd = (node.rightBracket !== null)
 			? node.rightBracket.position + node.rightBracket.value.length
@@ -64,7 +64,7 @@ export class ExpectedAttributesValidator implements Validator {
 					if (fieldsAttribute instanceof KeyValuePair && fieldsAttribute.value instanceof ArrayNode) {
 						const fields: ArrayItem[] = fieldsAttribute.value.children;
 						fields.forEach((field) => {
-							if (field.value instanceof Node) {
+							if (field.value instanceof ObjectNode) {
 								// console.log('Validate node', field);
 								this.validateNode(field.value, messageAggregator, true);
 							}
@@ -83,17 +83,17 @@ export class ExpectedAttributesValidator implements Validator {
 		}
 	}
 
-	validateInLineDefinedType(node: Node, fieldName: string, messageAggregator: ValidationMessageAggregator) {
+	validateInLineDefinedType(node: ObjectNode, fieldName: string, messageAggregator: ValidationMessageAggregator) {
 		const attribute = node.children.find(kv => kv.key !== null && kv.key.value === fieldName);
 		// console.log(attribute);
-		if (attribute instanceof KeyValuePair && attribute.value instanceof Node) {
+		if (attribute instanceof KeyValuePair && attribute.value instanceof ObjectNode) {
 			this.validateNode(attribute.value, messageAggregator);
 		}
 		else if (attribute instanceof KeyValuePair && attribute.value instanceof ArrayNode) { // union
 			const types: ArrayItem[] = attribute.value.children;
 			// console.log(types);
 			types.forEach((type) => {
-				if (type.value instanceof Node) {
+				if (type.value instanceof ObjectNode) {
 					// console.log('Complex type in union', type.value);
 					this.validateNode(type.value, messageAggregator);
 				}

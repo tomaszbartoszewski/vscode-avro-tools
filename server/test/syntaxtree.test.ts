@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import {buildTree, ArrayNode, ArrayItem, Node} from '../src/syntaxtree';
+import {buildTree, ArrayNode, ArrayItem, ObjectNode} from '../src/syntaxtree';
 import { Token, LeftBracketToken, RightBracketToken, ColonToken, StringToken, IntegerToken, PrecisionNumberToken, BoolToken, NullToken, CommaToken, LeftSquareBracketToken, RightSquareBracketToken, FreeTextToken } from '../src/parsing';
 
 class TokenContainer {
@@ -258,7 +258,7 @@ describe('Build Tree', () => {
 			.getTokens();
 		const result = buildTree(tokens).node;
 		assert.equal(result.children.length, 1);
-		const innerNode = result.children[0].value as Node;
+		const innerNode = result.children[0].value as ObjectNode;
 		assert.equal(innerNode.leftBracket, tokens[3]);
 		assert.equal(innerNode.children.length, 1);
 		const keyValue = innerNode.children[0];
@@ -281,7 +281,7 @@ describe('Build Tree', () => {
 		assert.equal(result.children.length, 1);
 		const arrayNode = result.children[0].value as ArrayNode;
 		assert.equal(arrayNode.children.length, 1);
-		assert.equal(arrayNode.children[0].value instanceof Node, true);
+		assert.equal(arrayNode.children[0].value instanceof ObjectNode, true);
 	});
 	it('should return node inside an array, missing record closing bracket', () => {
 		const tokens = new TokenContainer()
@@ -296,7 +296,7 @@ describe('Build Tree', () => {
 		assert.equal(result.children.length, 1);
 		const arrayNode = result.children[0].value as ArrayNode;
 		assert.equal(arrayNode.children.length, 1);
-		assert.equal(arrayNode.children[0].value instanceof Node, true);
+		assert.equal(arrayNode.children[0].value instanceof ObjectNode, true);
 	});
 	it('should return an array inside an array', () => {
 		const tokens = new TokenContainer()

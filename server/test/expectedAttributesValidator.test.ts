@@ -1,25 +1,25 @@
 import * as assert from 'assert';
-import { KeyValuePair, ArrayNode, Node, Tree, ArrayItem } from '../src/syntaxtree';
+import { KeyValuePair, ArrayNode, ObjectNode, Tree, ArrayItem } from '../src/syntaxtree';
 import { Validator, ValidationMessage, ValidationSeverity } from '../src/validation/validators'
 import { ExpectedAttributesValidator } from '../src/validation/expectedAttributesValidator'
 import { StringToken, Token, LeftBracketToken, RightBracketToken } from '../src/parsing';
 
-function nodeWithAttributes(...attributes: KeyValuePair[]): Node {
-	const node = new Node();
+function nodeWithAttributes(...attributes: KeyValuePair[]): ObjectNode {
+	const node = new ObjectNode();
 	attributes.forEach((attribute) => {
 		node.addChild(attribute);
 	});
 	return node;
 }
 
-function nodeWithBrackets(leftBracket: LeftBracketToken, rightBracket: RightBracketToken): Node {
-	const node = new Node();
+function nodeWithBrackets(leftBracket: LeftBracketToken, rightBracket: RightBracketToken): ObjectNode {
+	const node = new ObjectNode();
 	node.setLeftBracket(leftBracket);
 	node.setRightBracket(rightBracket);
 	return node;
 }
 
-function arrayNodeWithValues(...values: (Token|Node)[]): ArrayNode {
+function arrayNodeWithValues(...values: (Token|ObjectNode)[]): ArrayNode {
 	const arrayNode = new ArrayNode();
 	values.forEach((attribute) => {
 		const arrayItem = new ArrayItem();
@@ -189,7 +189,7 @@ describe('ExpectedAttributesValidator', () => {
 			'Attribute "fields" is missing'));
 	});
 
-	const fieldTypes: [StringToken | Node, string][] = [
+	const fieldTypes: [StringToken | ObjectNode, string][] = [
 		[new StringToken('"string"', 51), '"string"'],
 		[nodeWithAttributes(
 			keyValue(new StringToken('"type"', 51), new StringToken('"string"', 58))

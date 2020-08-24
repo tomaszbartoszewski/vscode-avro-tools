@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import {tokenize, Token} from '../src/parsing';
-import {buildTree, ArrayNode, ArrayItem, Node, KeyValuePair, Tree} from '../src/syntaxtree';
+import {buildTree, ArrayNode, ArrayItem, ObjectNode, KeyValuePair, Tree} from '../src/syntaxtree';
 
 function countTokensInNode(node: any): number {
 	if (node === null) {
@@ -30,7 +30,7 @@ function countTokensInNode(node: any): number {
 		}
 		return count;
 	}
-	else if (node instanceof Node) {
+	else if (node instanceof ObjectNode) {
 		let count = 0;
 		if (node.leftBracket !== null) {
 			count++;
