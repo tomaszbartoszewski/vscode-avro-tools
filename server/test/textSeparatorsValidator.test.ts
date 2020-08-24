@@ -125,4 +125,27 @@ describe('TextSeparatorsValidator', () => {
 			10,
 			'Missing closing bracket "]"'));
 	});
+
+	[
+		objectNode(new LeftBracketToken('{', 0), null),
+		arrayNode(new LeftSquareBracketToken('[', 0), null),
+	].forEach((insideObject) => {
+		it('validate complex items inside array ' + JSON.stringify(insideObject), () => {
+			const childNode = arrayNode(
+				new LeftSquareBracketToken('[', 9),
+				new LeftSquareBracketToken('[', 20),
+				arrayItem(insideObject, null)
+			);
+	
+			const node = objectNode(
+				new LeftBracketToken('{', 0),
+				new RightBracketToken('}', 32),
+				keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
+			);
+	
+			const highlights = validator.validate(new Tree(node, []));
+	
+			assert.equal(highlights.length, 1);
+		});
+	});
 });

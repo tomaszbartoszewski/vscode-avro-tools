@@ -53,6 +53,14 @@ export class TextSeparatorsValidator implements Validator {
 					item.getEndPosition(),
 					'Missing "," between array items'));
 			}
+
+			if (item.value instanceof ObjectNode) {
+				this.validateNode(item.value, messageAggregator);
+			}
+
+			if (item.value instanceof ArrayNode) {
+				this.validateArrayNode(item.value, messageAggregator);
+			}
 		});
 
 		if (arrayNode.leftBracket !== null && arrayNode.rightBracket === null) {

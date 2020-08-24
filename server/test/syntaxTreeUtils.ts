@@ -18,7 +18,7 @@ export function keyValuePair(key: StringToken | null, colon: ColonToken | null, 
 	return keyValuePair;
 }
 
-export function arrayItem(value: Token | null, comma: CommaToken | null): ArrayItem {
+export function arrayItem(value: Token | ObjectNode | ArrayNode | null, comma: CommaToken | null): ArrayItem {
 	const arrayItem = new ArrayItem();
 	if (value !== null) {
 		arrayItem.setValue(value);
