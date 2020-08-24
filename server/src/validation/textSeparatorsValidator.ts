@@ -54,5 +54,13 @@ export class TextSeparatorsValidator implements Validator {
 					'Missing "," between array items'));
 			}
 		});
+
+		if (arrayNode.leftBracket !== null && arrayNode.rightBracket === null) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				arrayNode.getStartPosition(),
+				arrayNode.getEndPosition(),
+				'Missing closing bracket "]"'));
+		}
 	}
 }

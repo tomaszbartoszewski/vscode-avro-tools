@@ -103,4 +103,26 @@ describe('TextSeparatorsValidator', () => {
 			14,
 			'Missing "," between array items'));
 	});
+
+	it('validate returns error for inside array missing closing bracket', () => {
+		const childNode = arrayNode(
+			new LeftSquareBracketToken('[', 9),
+			null
+		);
+
+		const node = objectNode(
+			new LeftBracketToken('{', 0),
+			new RightBracketToken('}', 32),
+			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			9,
+			10,
+			'Missing closing bracket "]"'));
+	});
 });
