@@ -1,4 +1,5 @@
 import { Token, LeftBracketToken, RightBracketToken, StringToken, ColonToken, CommaToken, LeftSquareBracketToken, RightSquareBracketToken, IntegerToken, PrecisionNumberToken, BoolToken, NullToken, FreeTextToken } from './tokens';
+import { HighlightRange } from './highlightsRange';
 
 export class Tree {
 	node: ObjectNode;
@@ -10,7 +11,7 @@ export class Tree {
 	}
 }
 
-export class ObjectNode {
+export class ObjectNode implements HighlightRange {
 	leftBracket: LeftBracketToken | null;
 	children: KeyValuePair[];
 	rightBracket: RightBracketToken | null;
@@ -19,6 +20,26 @@ export class ObjectNode {
 		this.leftBracket = null;
 		this.children = [];
 		this.rightBracket = null;
+	}
+
+	getStartPosition(): number {
+		return this.leftBracket?.getStartPosition()
+			?? (
+				this.children.length > 0
+					? this.children[0].getStartPosition()
+					: this.rightBracket?.getStartPosition()
+			)
+			?? 0;
+	}
+
+	getEndPosition(): number {
+		return this.rightBracket?.getEndPosition()
+		?? (
+			this.children.length > 0
+				? this.children[this.children.length - 1].getEndPosition()
+				: this.leftBracket?.getEndPosition()
+		)
+		?? 0;
 	}
 
 	setLeftBracket(leftBracket: LeftBracketToken) {
@@ -34,7 +55,7 @@ export class ObjectNode {
 	}
 }
 
-export class KeyValuePair {
+export class KeyValuePair implements HighlightRange {
 	key: StringToken | null;
 	colon: ColonToken | null;
 	value: Token | ObjectNode | ArrayNode | null;
@@ -45,6 +66,22 @@ export class KeyValuePair {
 		this.colon = null;
 		this.value = null;
 		this.comma = null;
+	}
+
+	getStartPosition(): number {
+		return this.key?.getStartPosition()
+			?? this.colon?.getStartPosition()
+			?? this.value?.getStartPosition()
+			?? this.comma?.getStartPosition()
+			?? 0;
+	}
+
+	getEndPosition(): number {
+		return this.comma?.getEndPosition()
+			?? this.value?.getEndPosition()
+			?? this.colon?.getEndPosition()
+			?? this.key?.getEndPosition()
+			?? 0;
 	}
 
 	setKey(key: StringToken) {
@@ -64,7 +101,7 @@ export class KeyValuePair {
 	}
 }
 
-export class ArrayNode {
+export class ArrayNode implements HighlightRange {
 	leftBracket: LeftSquareBracketToken | null;
 	children: ArrayItem[];
 	rightBracket: RightSquareBracketToken | null;
@@ -73,6 +110,26 @@ export class ArrayNode {
 		this.leftBracket = null;
 		this.children = [];
 		this.rightBracket = null;
+	}
+
+	getStartPosition(): number {
+		return this.leftBracket?.getStartPosition()
+			?? (
+				this.children.length > 0
+					? this.children[0].getStartPosition()
+					: this.rightBracket?.getStartPosition()
+			)
+			?? 0;
+	}
+
+	getEndPosition(): number {
+		return this.rightBracket?.getEndPosition()
+		?? (
+			this.children.length > 0
+				? this.children[this.children.length - 1].getEndPosition()
+				: this.leftBracket?.getEndPosition()
+		)
+		?? 0;
 	}
 
 	setLeftBracket(leftBracket: LeftSquareBracketToken) {
@@ -88,13 +145,25 @@ export class ArrayNode {
 	}
 }
 
-export class ArrayItem {
+export class ArrayItem implements HighlightRange {
 	value: Token | ObjectNode | ArrayNode | null;
 	comma: CommaToken | null;
 
 	constructor() {
 		this.value = null;
 		this.comma = null;
+	}
+
+	getStartPosition(): number {
+		return this.value?.getStartPosition()
+			?? this.comma?.getStartPosition()
+			?? 0;
+	}
+
+	getEndPosition(): number {
+		return this.comma?.getEndPosition()
+			?? this.value?.getEndPosition()
+			?? 0;
 	}
 
 	setValue(value: Token | ObjectNode | ArrayNode) {

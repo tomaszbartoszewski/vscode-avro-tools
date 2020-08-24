@@ -1,4 +1,6 @@
-export abstract class Token {
+import { HighlightRange } from './highlightsRange';
+
+export abstract class Token implements HighlightRange {
 	value: string;
 	position: number;
 	length: number;

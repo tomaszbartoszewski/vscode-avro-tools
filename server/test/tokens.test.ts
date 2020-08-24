@@ -5,11 +5,11 @@ describe('Tokens', () => {
 	it('Get start position returns position', () => {
 		const expected = 5;
 		const token = new StringToken('"type"', expected);
-		assert.equal(expected, token.getStartPosition());
+		assert.equal(token.getStartPosition(), expected);
 	});
 
 	it('Get end position returns position plus value length', () => {
 		const token = new StringToken('"type"', 5);
-		assert.equal(11, token.getEndPosition());
+		assert.equal(token.getEndPosition(), 11);
 	});
 });
