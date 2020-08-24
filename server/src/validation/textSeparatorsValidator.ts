@@ -25,6 +25,10 @@ export class TextSeparatorsValidator implements Validator {
 					attribute.getEndPosition(),
 					'Missing "," between attributes'));
 			}
+
+			if (attribute.value instanceof ObjectNode) {
+				this.validateNode(attribute.value, messageAggregator);
+			}
 		});
 
 		if (node.leftBracket !== null && node.rightBracket === null) {

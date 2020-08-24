@@ -56,4 +56,27 @@ describe('TextSeparatorsValidator', () => {
 			17,
 			'Missing closing bracket "}"'));
 	});
+
+	it('validate returns error for inside object', () => {
+		const childNode = objectNode(
+			new LeftBracketToken('{', 9),
+			new RightBracketToken('}', 10),
+			keyValuePair(new StringToken('"type"', 10), null, new StringToken('"type"', 18), null)
+		);
+
+		const node = objectNode(
+			new LeftBracketToken('{', 0),
+			new RightBracketToken('}', 18),
+			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			10,
+			24,
+			'Missing ":" between a key and a value'));
+	});
 });

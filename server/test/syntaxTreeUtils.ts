@@ -1,7 +1,7 @@
 import { StringToken, ColonToken, Token, CommaToken, LeftBracketToken, RightBracketToken, LeftSquareBracketToken, RightSquareBracketToken } from '../src/tokens';
 import { KeyValuePair, ArrayItem, ObjectNode, ArrayNode } from '../src/syntaxTree';
 
-export function keyValuePair(key: StringToken | null, colon: ColonToken | null, value: Token | null, comma: CommaToken | null): KeyValuePair {
+export function keyValuePair(key: StringToken | null, colon: ColonToken | null, value: Token | ObjectNode | null, comma: CommaToken | null): KeyValuePair {
 	const keyValuePair = new KeyValuePair();
 	if (key !== null) {
 		keyValuePair.setKey(key);
