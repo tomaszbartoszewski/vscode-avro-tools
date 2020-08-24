@@ -1,5 +1,5 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
-import { Tree, ObjectNode } from '../syntaxtree';
+import { Tree, ObjectNode } from '../syntaxTree';
 
 export class TextSeparatorsValidator implements Validator {
 	validate(tree: Tree): ValidationMessage[] {

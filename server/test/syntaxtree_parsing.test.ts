@@ -1,6 +1,8 @@
 import * as assert from 'assert';
-import {tokenize, Token} from '../src/parsing';
-import {buildTree, ArrayNode, ArrayItem, ObjectNode, KeyValuePair, Tree} from '../src/syntaxtree';
+import {tokenize} from '../src/parsing';
+import {Token} from '../src/tokens';
+import {ArrayNode, ArrayItem, ObjectNode, KeyValuePair} from '../src/syntaxTree';
+import {buildTree} from '../src/buildSyntaxTree'
 
 function countTokensInNode(node: any): number {
 	if (node === null) {

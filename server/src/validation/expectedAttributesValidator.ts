@@ -1,5 +1,5 @@
-import { Tree, KeyValuePair, ObjectNode, ArrayNode, ArrayItem } from '../syntaxtree';
-import { StringToken } from '../parsing';
+import { Tree, KeyValuePair, ObjectNode, ArrayNode, ArrayItem } from '../syntaxTree';
+import { StringToken } from '../tokens';
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
 
 export class ExpectedAttributesValidator implements Validator {

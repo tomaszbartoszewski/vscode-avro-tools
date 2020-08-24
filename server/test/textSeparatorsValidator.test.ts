@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import { ObjectNode, KeyValuePair, Tree } from '../src/syntaxtree';
-import { LeftBracketToken, StringToken, RightBracketToken } from '../src/parsing';
+import { ObjectNode, KeyValuePair, Tree } from '../src/syntaxTree';
+import { LeftBracketToken, StringToken, RightBracketToken } from '../src/tokens';
 import { TextSeparatorsValidator } from '../src/validation/textSeparatorsValidator'
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
 

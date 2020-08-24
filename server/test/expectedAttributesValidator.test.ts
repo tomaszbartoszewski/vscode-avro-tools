@@ -1,8 +1,8 @@
 import * as assert from 'assert';
-import { KeyValuePair, ArrayNode, ObjectNode, Tree, ArrayItem } from '../src/syntaxtree';
+import { KeyValuePair, ArrayNode, ObjectNode, Tree, ArrayItem } from '../src/syntaxTree';
 import { Validator, ValidationMessage, ValidationSeverity } from '../src/validation/validators'
 import { ExpectedAttributesValidator } from '../src/validation/expectedAttributesValidator'
-import { StringToken, Token, LeftBracketToken, RightBracketToken } from '../src/parsing';
+import { StringToken, Token, LeftBracketToken, RightBracketToken } from '../src/tokens';
 
 function nodeWithAttributes(...attributes: KeyValuePair[]): ObjectNode {
 	const node = new ObjectNode();

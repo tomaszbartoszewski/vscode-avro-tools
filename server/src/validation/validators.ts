@@ -1,4 +1,4 @@
-import { Tree } from '../syntaxtree';
+import { Tree } from '../syntaxTree';
 
 export enum ValidationSeverity {
 	Error,

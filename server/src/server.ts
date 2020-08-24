@@ -18,8 +18,9 @@ import {
 import {
   TextDocument
 } from 'vscode-languageserver-textdocument';
-import {tokenize, FreeTextToken} from './parsing';
-import buildTree from './syntaxtree';
+import {tokenize} from './parsing';
+import {FreeTextToken} from './tokens';
+import buildTree from './buildSyntaxTree';
 import { Validator, ValidationSeverity } from './validation/validators';
 import { ExpectedAttributesValidator } from './validation/expectedAttributesValidator';
 // import {  } from 'vscode';
