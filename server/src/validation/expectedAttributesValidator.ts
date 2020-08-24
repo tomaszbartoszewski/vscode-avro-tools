@@ -52,7 +52,7 @@ export class ExpectedAttributesValidator implements Validator {
 				}
 
 				attributesToValidate.forEach((attributeName) => {
-					const attributeMissing = this.expectedAttribute(node.children, attributeName, typeKey.position, token.value.length + token.position);
+					const attributeMissing = this.expectedAttribute(node.children, attributeName, type.getStartPosition(), type.getEndPosition());
 					if (attributeMissing !== null) {
 						messageAggregator.addMessage(attributeMissing);
 					}
