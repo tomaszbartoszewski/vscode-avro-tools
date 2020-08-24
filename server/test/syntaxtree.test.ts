@@ -1,62 +1,7 @@
 import { KeyValuePair, ArrayItem, ObjectNode, ArrayNode } from '../src/syntaxTree';
-import { StringToken, ColonToken, Token, CommaToken, LeftBracketToken, RightBracketToken, LeftSquareBracketToken, RightSquareBracketToken } from '../src/tokens';
+import { StringToken, ColonToken, CommaToken, LeftBracketToken, RightBracketToken } from '../src/tokens';
 import * as assert from 'assert';
-
-function keyValuePair(key: StringToken | null, colon: ColonToken | null, value: Token | null, comma: CommaToken | null): KeyValuePair {
-	const keyValuePair = new KeyValuePair();
-	if (key !== null) {
-		keyValuePair.setKey(key);
-	}
-	if (colon !== null) {
-		keyValuePair.setColon(colon);
-	}
-	if (value !== null) {
-		keyValuePair.setValue(value);
-	}
-	if (comma !== null) {
-		keyValuePair.setComma(comma);
-	}
-	return keyValuePair;
-}
-
-function arrayItem(value: Token | null, comma: CommaToken | null): ArrayItem {
-	const arrayItem = new ArrayItem();
-	if (value !== null) {
-		arrayItem.setValue(value);
-	}
-	if (comma !== null) {
-		arrayItem.setComma(comma);
-	}
-	return arrayItem;
-}
-
-function objectNode(leftBracket: LeftBracketToken | null, rightBracket: RightBracketToken | null, ...children: KeyValuePair[]): ObjectNode {
-	const objectNode = new ObjectNode();
-	if (leftBracket !== null) {
-		objectNode.setLeftBracket(leftBracket);
-	}
-	if (rightBracket !== null) {
-		objectNode.setRightBracket(rightBracket);
-	}
-	children.forEach((keyValuePair) => {
-		objectNode.addAttribute(keyValuePair);
-	});
-	return objectNode;
-}
-
-function arrayNode(leftBracket: LeftSquareBracketToken | null, rightBracket: RightSquareBracketToken | null, ...children: ArrayItem[]): ArrayNode {
-	const objectNode = new ArrayNode();
-	if (leftBracket !== null) {
-		objectNode.setLeftBracket(leftBracket);
-	}
-	if (rightBracket !== null) {
-		objectNode.setRightBracket(rightBracket);
-	}
-	children.forEach((keyValuePair) => {
-		objectNode.addItem(keyValuePair);
-	});
-	return objectNode;
-}
+import { keyValuePair, arrayItem, objectNode, arrayNode } from './syntaxTreeUtils';
 
 describe('SyntaxTree', () => {
 	[
