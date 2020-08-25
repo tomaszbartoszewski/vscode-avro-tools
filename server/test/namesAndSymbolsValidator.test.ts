@@ -93,7 +93,7 @@ describe('NamesAndSymbolsValidator', () => {
 			ValidationSeverity.Error,
 			50,
 			56,
-			'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*'));
+			'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
 	});
 
 	[

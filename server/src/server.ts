@@ -25,6 +25,7 @@ import { Validator, ValidationSeverity, ValidationMessage } from './validation/v
 import { ExpectedAttributesValidator } from './validation/expectedAttributesValidator';
 import { TextSeparatorsValidator } from './validation/textSeparatorsValidator';
 import { AttributeDuplicatesValidator } from './validation/attributeDuplicatesValidator';
+import { NamesAndSymbolsValidator } from './validation/namesAndSymbolsValidator';
 // import {  } from 'vscode';
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -162,7 +163,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   const validators: Validator[] = [
     new TextSeparatorsValidator(),
     new AttributeDuplicatesValidator(),
-    new ExpectedAttributesValidator()
+    new ExpectedAttributesValidator(),
+    new NamesAndSymbolsValidator()
   ];
 
   console.time('validate');

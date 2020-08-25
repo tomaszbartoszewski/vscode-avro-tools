@@ -62,7 +62,7 @@ export class NamesAndSymbolsValidator implements Validator {
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
 					attribute.value.getEndPosition(),
-					'Namespace ' + namespace + ' is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*'));
+					'Namespace ' + namespace + ' is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
 			}
 		}
 	}
