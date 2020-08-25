@@ -26,6 +26,14 @@ export class TextSeparatorsValidator implements Validator {
 					'Missing "," between attributes'));
 			}
 
+			if (index === node.attributes.length - 1 && attribute.comma !== null) {
+				messageAggregator.addMessage(new ValidationMessage(
+					ValidationSeverity.Error,
+					attribute.comma.getStartPosition(),
+					attribute.comma.getEndPosition(),
+					'Last attribute followed by ","'));
+			}
+
 			if (attribute.value instanceof ObjectNode) {
 				this.validateNode(attribute.value, messageAggregator);
 			}
@@ -52,6 +60,14 @@ export class TextSeparatorsValidator implements Validator {
 					item.getStartPosition(),
 					item.getEndPosition(),
 					'Missing "," between array items'));
+			}
+
+			if (index === arrayNode.items.length - 1 && item.comma !== null) {
+				messageAggregator.addMessage(new ValidationMessage(
+					ValidationSeverity.Error,
+					item.comma.getStartPosition(),
+					item.comma.getEndPosition(),
+					'Last array item followed by ","'));
 			}
 
 			if (item.value instanceof ObjectNode) {

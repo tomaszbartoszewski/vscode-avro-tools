@@ -1,9 +1,17 @@
 import * as assert from 'assert';
-import { Tree } from '../src/syntaxTree';
+import { Tree, ObjectNode, ArrayNode } from '../src/syntaxTree';
 import { LeftBracketToken, StringToken, RightBracketToken, ColonToken, LeftSquareBracketToken, RightSquareBracketToken, CommaToken } from '../src/tokens';
 import { TextSeparatorsValidator } from '../src/validation/textSeparatorsValidator'
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
 import { objectNode, keyValuePair, arrayNode, arrayItem } from './syntaxTreeUtils';
+
+function validObjectNodeWithType(type: ObjectNode | ArrayNode): ObjectNode {
+	return objectNode(
+		new LeftBracketToken('{', 0),
+		new RightBracketToken('}', 1000),
+		keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), type, null)
+	)
+}
 
 describe('TextSeparatorsValidator', () => {
 	const validator = new TextSeparatorsValidator();
@@ -64,11 +72,7 @@ describe('TextSeparatorsValidator', () => {
 			keyValuePair(new StringToken('"type"', 10), null, new StringToken('"type"', 18), null)
 		);
 
-		const node = objectNode(
-			new LeftBracketToken('{', 0),
-			new RightBracketToken('}', 30),
-			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
-		);
+		const node = validObjectNodeWithType(childNode);
 
 		const highlights = validator.validate(new Tree(node, []));
 
@@ -85,14 +89,10 @@ describe('TextSeparatorsValidator', () => {
 			new LeftSquareBracketToken('[', 9),
 			new RightSquareBracketToken(']', 30),
 			arrayItem(new StringToken('null', 10), null),
-			arrayItem(new StringToken('"string"', 18), null),
+			arrayItem(new StringToken('"string"', 18), null)
 		);
 
-		const node = objectNode(
-			new LeftBracketToken('{', 0),
-			new RightBracketToken('}', 32),
-			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
-		);
+		const node = validObjectNodeWithType(childNode);
 
 		const highlights = validator.validate(new Tree(node, []));
 
@@ -110,11 +110,7 @@ describe('TextSeparatorsValidator', () => {
 			null
 		);
 
-		const node = objectNode(
-			new LeftBracketToken('{', 0),
-			new RightBracketToken('}', 32),
-			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
-		);
+		const node = validObjectNodeWithType(childNode);
 
 		const highlights = validator.validate(new Tree(node, []));
 
@@ -137,11 +133,7 @@ describe('TextSeparatorsValidator', () => {
 				arrayItem(insideObject, null)
 			);
 	
-			const node = objectNode(
-				new LeftBracketToken('{', 0),
-				new RightBracketToken('}', 32),
-				keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), childNode, null)
-			);
+			const node = validObjectNodeWithType(childNode);
 	
 			const highlights = validator.validate(new Tree(node, []));
 	
@@ -154,7 +146,7 @@ describe('TextSeparatorsValidator', () => {
 			new LeftSquareBracketToken('[', 9),
 			new RightSquareBracketToken(']', 30),
 			arrayItem(new StringToken('null', 10), new CommaToken(',', 14)),
-			arrayItem(new StringToken('"string"', 18), null),
+			arrayItem(new StringToken('"string"', 18), null)
 		);
 
 		const node = objectNode(
@@ -167,5 +159,41 @@ describe('TextSeparatorsValidator', () => {
 		const highlights = validator.validate(new Tree(node, []));
 
 		assert.equal(highlights.length, 0);
+	});
+
+	it('validate returns error for inside array item comma after last item', () => {
+		const childNode = arrayNode(
+			new LeftSquareBracketToken('[', 9),
+			new RightSquareBracketToken(']', 30),
+			arrayItem(new StringToken('null', 10), new CommaToken(',', 14)),
+			arrayItem(new StringToken('"string"', 18), new CommaToken(',', 26))
+		);
+
+		const node = validObjectNodeWithType(childNode);
+
+		const highlights = validator.validate(new Tree(node, []));
+
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			26,
+			27,
+			'Last array item followed by ","'));
+	});
+
+	it('validate returns error when colon is missing', () => {
+		const node = objectNode(
+			new LeftBracketToken('{', 0),
+			new RightBracketToken('}', 18),
+			keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), new StringToken('"string"', 9), new CommaToken(',', 17)));
+
+		const highlights = validator.validate(new Tree(node, []));
+
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			17,
+			18,
+			'Last attribute followed by ","'));
 	});
 });
