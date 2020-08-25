@@ -21,9 +21,10 @@ import {
 import {tokenize} from './parsing';
 import {FreeTextToken} from './tokens';
 import buildTree from './buildSyntaxTree';
-import { Validator, ValidationSeverity } from './validation/validators';
+import { Validator, ValidationSeverity, ValidationMessage } from './validation/validators';
 import { ExpectedAttributesValidator } from './validation/expectedAttributesValidator';
 import { TextSeparatorsValidator } from './validation/textSeparatorsValidator';
+import { AttributeDuplicatesValidator } from './validation/attributeDuplicatesValidator';
 // import {  } from 'vscode';
 
 // Create a connection for the server, using Node's IPC as a transport.
@@ -158,13 +159,20 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   let problems = 0;
   let diagnostics: Diagnostic[] = [];
 
-  const validator: Validator = new ExpectedAttributesValidator();
-  const textSeparatorsValidator: Validator = new TextSeparatorsValidator();
+  const validators: Validator[] = [
+    new TextSeparatorsValidator(),
+    new AttributeDuplicatesValidator(),
+    new ExpectedAttributesValidator()
+  ];
+
   console.time('validate');
-  const iter = validator.validate(tree);
-  const iter2 = textSeparatorsValidator.validate(tree);
+  let highlights: ValidationMessage[] = [];
+  validators.forEach((validator) => {
+    highlights = highlights.concat(validator.validate(tree));
+  })
   console.timeEnd('validate');
-  iter.concat(iter2).forEach((value) => {
+
+  highlights.forEach((value) => {
     problems++;
     let diagnostic: Diagnostic = {
       severity: (value.severity === ValidationSeverity.Error) ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,

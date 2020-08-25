@@ -3,15 +3,7 @@ import { Tree, ObjectNode, ArrayNode } from '../src/syntaxTree';
 import { LeftBracketToken, StringToken, RightBracketToken, ColonToken, LeftSquareBracketToken, RightSquareBracketToken, CommaToken } from '../src/tokens';
 import { TextSeparatorsValidator } from '../src/validation/textSeparatorsValidator'
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
-import { objectNode, keyValuePair, arrayNode, arrayItem } from './syntaxTreeUtils';
-
-function validObjectNodeWithType(type: ObjectNode | ArrayNode): ObjectNode {
-	return objectNode(
-		new LeftBracketToken('{', 0),
-		new RightBracketToken('}', 1000),
-		keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), type, null)
-	)
-}
+import { objectNode, keyValuePair, arrayNode, arrayItem, validObjectNodeWithType } from './syntaxTreeUtils';
 
 describe('TextSeparatorsValidator', () => {
 	const validator = new TextSeparatorsValidator();

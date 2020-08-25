@@ -39,7 +39,7 @@ Syntax tree only understands root node with fields. Field values must be primiti
 * Validating names
 * Validating enum values
 * Validating values in array
-* Highlighting duplicated keys / fields
+* Highlighting duplicated keys / fields (Done for duplicated attributes)
 * Autocomplete of keys, types, defaults
 * Autocomplete of snippets
 
