@@ -61,6 +61,21 @@ export function validObjectNodeWithType(type: ObjectNode | ArrayNode): ObjectNod
 	return objectNode(
 		new LeftBracketToken('{', 0),
 		new RightBracketToken('}', 1000),
-		keyValuePair(new StringToken('"type"', 1), new ColonToken(':', 7), type, null)
+		keyValuePair(new StringToken('"name"', 1), new ColonToken(':', 7), new StringToken('"Test"', 9), new CommaToken(',', 15)),
+		keyValuePair(new StringToken('"type"', 20), new ColonToken(':', 27), type, null)
 	)
+}
+
+export function nodeWithoutBrackets(...attributes: KeyValuePair[]): ObjectNode {
+	return objectNode(null, null, ...attributes);
+}
+
+export function arrayNodeWithoutBrackets(...values: (Token|ObjectNode)[]): ArrayNode {
+	const arrayNode = new ArrayNode();
+	values.forEach((value) => {
+		const arrayItem = new ArrayItem();
+		arrayItem.setValue(value);
+		arrayNode.addItem(arrayItem);
+	});
+	return arrayNode;
 }
