@@ -1,6 +1,7 @@
-import { Tree, KeyValuePair, ObjectNode, ArrayNode, ArrayItem } from '../syntaxTree';
+import { Tree, KeyValuePair, ObjectNode } from '../syntaxTree';
 import { StringToken } from '../tokens';
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
+import { CorrectSchemaWalker } from './correctSchemaWalker';
 
 export class ExpectedAttributesValidator implements Validator {
 	private typeRequiredAttributes: Map<string, string[]> =
@@ -14,15 +15,16 @@ export class ExpectedAttributesValidator implements Validator {
 
 	validate(tree: Tree): ValidationMessage[] {
 		const messageAggregator = new ValidationMessageAggregator();
-		this.validateNode(tree.node, messageAggregator);
+		const walker = new CorrectSchemaWalker((node, isField) => {
+			this.validateNode(node, messageAggregator, isField);
+		});
+		walker.walkTree(tree);
 		return messageAggregator.getAll();
 	}
 
-	validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean = false) {
-		const nodeStart = (node.leftBracket !== null) ? node.leftBracket.position : 0;
-		const nodeEnd = (node.rightBracket !== null)
-			? node.rightBracket.position + node.rightBracket.value.length
-			: nodeStart + 1;
+	private validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean) {
+		const nodeStart = node.getStartPosition();
+		const nodeEnd = node.getEndPosition();
 
 		if (isField) {
 			const attributeMissing = this.expectedAttribute(node.attributes, '"name"', nodeStart, nodeEnd);
@@ -40,7 +42,6 @@ export class ExpectedAttributesValidator implements Validator {
 
 			if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 				const token: StringToken = type.value;
-				const typeKey = type.key as StringToken;
 				const requiredAttributes = this.typeRequiredAttributes.get(token.value);
 
 				let attributesToValidate: Set<string> = new Set();
@@ -57,51 +58,11 @@ export class ExpectedAttributesValidator implements Validator {
 						messageAggregator.addMessage(attributeMissing);
 					}
 				});
-
-				if (token.value === '"record"') {
-					const fieldsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"fields"');
-					// console.log(fieldsAttribute);
-					if (fieldsAttribute instanceof KeyValuePair && fieldsAttribute.value instanceof ArrayNode) {
-						const fields: ArrayItem[] = fieldsAttribute.value.items;
-						fields.forEach((field) => {
-							if (field.value instanceof ObjectNode) {
-								// console.log('Validate node', field);
-								this.validateNode(field.value, messageAggregator, true);
-							}
-						});
-					}
-				}
-				else if (token.value === '"array"') {
-					this.validateInLineDefinedType(node, '"items"', messageAggregator);
-				}
-				else if (token.value === '"map"') {
-					this.validateInLineDefinedType(node, '"values"', messageAggregator);
-				}
 			}
-
-			this.validateInLineDefinedType(node, '"type"', messageAggregator);
 		}
 	}
 
-	validateInLineDefinedType(node: ObjectNode, fieldName: string, messageAggregator: ValidationMessageAggregator) {
-		const attribute = node.attributes.find(kv => kv.key !== null && kv.key.value === fieldName);
-		// console.log(attribute);
-		if (attribute instanceof KeyValuePair && attribute.value instanceof ObjectNode) {
-			this.validateNode(attribute.value, messageAggregator);
-		}
-		else if (attribute instanceof KeyValuePair && attribute.value instanceof ArrayNode) { // union
-			const types: ArrayItem[] = attribute.value.items;
-			// console.log(types);
-			types.forEach((type) => {
-				if (type.value instanceof ObjectNode) {
-					// console.log('Complex type in union', type.value);
-					this.validateNode(type.value, messageAggregator);
-				}
-			});
-		}
-	}
-
-	expectedAttribute(attributes: KeyValuePair[], name: string, messageStart: number, messageEnd: number): ValidationMessage | null {
+	private expectedAttribute(attributes: KeyValuePair[], name: string, messageStart: number, messageEnd: number): ValidationMessage | null {
 		let hasFields = false;
 		attributes.forEach((kv) => {
 			if (kv.key !== null && kv.key.value === name) {
