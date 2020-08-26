@@ -52,7 +52,7 @@ describe('NamesAndSymbolsValidator', () => {
 		assert.equal(highlights.length, 0);
 	});
 
-	it ('validate name of nested object', () => {
+	it('validate name of nested object', () => {
 		const childNode = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 10), null, new StringToken('"record"', 18), null),
 			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"11"', 30), null)
@@ -63,7 +63,7 @@ describe('NamesAndSymbolsValidator', () => {
 		assert.equal(highlights.length, 1);
 	});
 
-	it ('validate name of field', () => {
+	it('validate name of field', () => {
 		const childNode = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 10), null, new StringToken('"string"', 18), null),
 			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"+3"', 30), null)
@@ -119,7 +119,7 @@ describe('NamesAndSymbolsValidator', () => {
 		});
 	});
 
-	it ('validate namespace of nested object', () => {
+	it('validate namespace of nested object', () => {
 		const childNode = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 10), null, new StringToken('"record"', 18), null),
 			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
@@ -131,7 +131,7 @@ describe('NamesAndSymbolsValidator', () => {
 		assert.equal(highlights.length, 1);
 	});
 
-	it ('validate name of field', () => {
+	it('validate name of field', () => {
 		const childNode = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 10), null, new StringToken('"string"', 18), null),
 			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
@@ -147,5 +147,88 @@ describe('NamesAndSymbolsValidator', () => {
 		);
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 1);
+	});
+
+	it('validate symbols of an enum', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null,
+				arrayNodeWithoutBrackets(new StringToken('"Correct"', 50), new StringToken('"#incorrect"', 60)),
+				null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			60,
+			72,
+			'Symbol "#incorrect" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*'));
+	});
+
+	it('validate symbols of a nested enum', () => {
+		const childNode = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null,
+				arrayNodeWithoutBrackets(new StringToken('"Correct"', 50), new StringToken('"#incorrect"', 60)),
+				null)
+		);
+
+		const node = validObjectNodeWithType(childNode);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+	});
+
+	it('validate symbols of an enum all correct', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null,
+				arrayNodeWithoutBrackets(new StringToken('"Correct"', 50), new StringToken('"_good"', 60),
+				new StringToken('"perfect"', 50), new StringToken('"great1234_test_1"', 60)),
+				null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
+
+	it('validate name of an enum', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"11@£"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null,
+				arrayNodeWithoutBrackets(new StringToken('"Correct"', 50), new StringToken('"_good"', 60)),
+				null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			30,
+			36,
+			'Name "11@£" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*'));
+	});
+
+	it('validate namespace of an enum', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
+			keyValuePair(new StringToken('"namespace"', 38), null, new StringToken('"1234"', 50), null),
+			keyValuePair(new StringToken('"symbols"', 60), null,
+				arrayNodeWithoutBrackets(new StringToken('"Correct"', 70), new StringToken('"_good"', 80)),
+				null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			50,
+			56,
+			'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
 	});
 });

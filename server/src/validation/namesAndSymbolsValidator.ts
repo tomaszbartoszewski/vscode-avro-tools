@@ -5,6 +5,7 @@ import { CorrectSchemaWalker } from './correctSchemaWalker';
 
 export class NamesAndSymbolsValidator implements Validator {
 	private nameRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*\"$');
+	private symbolRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*\"$');
 	private namespaceRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*\"$');
 
 	validate(tree: Tree): ValidationMessage[] {
@@ -27,12 +28,16 @@ export class NamesAndSymbolsValidator implements Validator {
 		const type = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 		if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 			const token: StringToken = type.value;
-			console.log(token);
-			if (token.value === '"record"' && !isField) { // if it's a field we already ran a validation
+			// console.log(token);
+			if ((token.value === '"record"' || token.value === '"enum"') && !isField) { // if it's a field we already ran a validation
 				const nameAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"name"');
 				this.validateName(nameAttribute, messageAggregator);
 				const namespaceAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"namespace"');
 				this.validateNamespace(namespaceAttribute, messageAggregator);
+			}
+			if (token.value === '"enum"') {
+				const nameAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
+				this.validateSymbols(nameAttribute, messageAggregator);
 			}
 		}
 	}
@@ -40,9 +45,9 @@ export class NamesAndSymbolsValidator implements Validator {
 	private validateName(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof StringToken) {
 			const name = attribute.value.value;
-			console.log(name);
+			// console.log(name);
 			if (!this.nameRegex.test(name)) {
-				console.log('Name failed')
+				// console.log('Name failed')
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
@@ -55,15 +60,32 @@ export class NamesAndSymbolsValidator implements Validator {
 	private validateNamespace(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof StringToken) {
 			const namespace = attribute.value.value;
-			console.log(namespace);
+			// console.log(namespace);
 			if (!this.namespaceRegex.test(namespace)) {
-				console.log('Namespace failed')
+				// console.log('Namespace failed')
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
 					attribute.value.getEndPosition(),
 					'Namespace ' + namespace + ' is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
 			}
+		}
+	}
+
+	private validateSymbols(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		if (attribute instanceof KeyValuePair && attribute.value instanceof ArrayNode) {
+			// const name = attribute.value.value;
+			attribute.value.items.forEach((item) => {
+				// console.log(item);
+				if (item.value instanceof StringToken && !this.symbolRegex.test(item.value.value)) {
+					// console.log('Symbol failed')
+					messageAggregator.addMessage(new ValidationMessage(
+						ValidationSeverity.Error,
+						item.value.getStartPosition(),
+						item.value.getEndPosition(),
+						'Symbol ' + item.value.value + ' is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*'));
+				}
+			});
 		}
 	}
 }
