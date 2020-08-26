@@ -8,19 +8,21 @@ import { ValidationMessage, ValidationSeverity } from '../src/validation/validat
 describe('NamesAndSymbolsValidator', () => {
 	const validator = new NamesAndSymbolsValidator();
 
-	it('validate incorrect name', () => {
-		const node = nodeWithoutBrackets(
-			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"record"', 10), null),
-			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"11"', 30), null)
-		);
+	['"record"', '"enum"', '"fixed"'].forEach((type) => {
+		it('validate incorrect name on type ' + type, () => {
+			const node = nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken(type, 10), null),
+				keyValuePair(new StringToken('"name"', 20), null, new StringToken('"11"', 30), null)
+			);
 
-		const highlights = validator.validate(new Tree(node, []));
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], new ValidationMessage(
-			ValidationSeverity.Error,
-			30,
-			34,
-			'Name "11" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*'));
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
+				30,
+				34,
+				'Name "11" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*'));
+		});
 	});
 
 	[
@@ -80,20 +82,22 @@ describe('NamesAndSymbolsValidator', () => {
 		assert.equal(highlights.length, 1);
 	});
 
-	it('validate incorrect namespace', () => {
-		const node = nodeWithoutBrackets(
-			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"record"', 10), null),
-			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
-			keyValuePair(new StringToken('"namespace"', 38), null, new StringToken('"1234"', 50), null),
-		);
+	['"record"', '"enum"', '"fixed"'].forEach((type) => {
+		it('validate incorrect namespace on type ' + type, () => {
+			const node = nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken(type, 10), null),
+				keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
+				keyValuePair(new StringToken('"namespace"', 38), null, new StringToken('"1234"', 50), null),
+			);
 
-		const highlights = validator.validate(new Tree(node, []));
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], new ValidationMessage(
-			ValidationSeverity.Error,
-			50,
-			56,
-			'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
+				50,
+				56,
+				'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
+		});
 	});
 
 	[
@@ -187,48 +191,11 @@ describe('NamesAndSymbolsValidator', () => {
 			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
 			keyValuePair(new StringToken('"symbols"', 40), null,
 				arrayNodeWithoutBrackets(new StringToken('"Correct"', 50), new StringToken('"_good"', 60),
-				new StringToken('"perfect"', 50), new StringToken('"great1234_test_1"', 60)),
+					new StringToken('"perfect"', 50), new StringToken('"great1234_test_1"', 60)),
 				null)
 		);
 
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 0);
-	});
-
-	it('validate name of an enum', () => {
-		const node = nodeWithoutBrackets(
-			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
-			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"11@£"', 30), null),
-			keyValuePair(new StringToken('"symbols"', 40), null,
-				arrayNodeWithoutBrackets(new StringToken('"Correct"', 50), new StringToken('"_good"', 60)),
-				null)
-		);
-
-		const highlights = validator.validate(new Tree(node, []));
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], new ValidationMessage(
-			ValidationSeverity.Error,
-			30,
-			36,
-			'Name "11@£" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*'));
-	});
-
-	it('validate namespace of an enum', () => {
-		const node = nodeWithoutBrackets(
-			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
-			keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null),
-			keyValuePair(new StringToken('"namespace"', 38), null, new StringToken('"1234"', 50), null),
-			keyValuePair(new StringToken('"symbols"', 60), null,
-				arrayNodeWithoutBrackets(new StringToken('"Correct"', 70), new StringToken('"_good"', 80)),
-				null)
-		);
-
-		const highlights = validator.validate(new Tree(node, []));
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], new ValidationMessage(
-			ValidationSeverity.Error,
-			50,
-			56,
-			'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
 	});
 });

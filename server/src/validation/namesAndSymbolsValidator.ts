@@ -28,8 +28,7 @@ export class NamesAndSymbolsValidator implements Validator {
 		const type = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 		if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 			const token: StringToken = type.value;
-			// console.log(token);
-			if ((token.value === '"record"' || token.value === '"enum"') && !isField) { // if it's a field we already ran a validation
+			if ((token.value === '"record"' || token.value === '"enum"' || token.value === '"fixed"') && !isField) { // if it's a field we already ran a validation
 				const nameAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"name"');
 				this.validateName(nameAttribute, messageAggregator);
 				const namespaceAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"namespace"');
@@ -45,9 +44,7 @@ export class NamesAndSymbolsValidator implements Validator {
 	private validateName(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof StringToken) {
 			const name = attribute.value.value;
-			// console.log(name);
 			if (!this.nameRegex.test(name)) {
-				// console.log('Name failed')
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
@@ -60,9 +57,7 @@ export class NamesAndSymbolsValidator implements Validator {
 	private validateNamespace(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof StringToken) {
 			const namespace = attribute.value.value;
-			// console.log(namespace);
 			if (!this.namespaceRegex.test(namespace)) {
-				// console.log('Namespace failed')
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
@@ -74,11 +69,8 @@ export class NamesAndSymbolsValidator implements Validator {
 
 	private validateSymbols(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof ArrayNode) {
-			// const name = attribute.value.value;
 			attribute.value.items.forEach((item) => {
-				// console.log(item);
 				if (item.value instanceof StringToken && !this.symbolRegex.test(item.value.value)) {
-					// console.log('Symbol failed')
 					messageAggregator.addMessage(new ValidationMessage(
 						ValidationSeverity.Error,
 						item.value.getStartPosition(),
