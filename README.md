@@ -36,8 +36,8 @@ Syntax tree only understands root node with fields. Field values must be primiti
 * Validate text separators ("}", "]", ":", "," but syntax tree building is causing entire document to go read on missing closing bracket when attribute had value, that could be added)
 * Validating keys available in Avro (Based on documentation other keys are correct " Attributes not defined in this document are permitted as metadata, but must not affect the format of serialized data. ")
 * Validating keys inside a node based on type (Done, at least what I found in a documentation)
-* Validating names
-* Validating enum values
+* Validating names (Done)
+* Validating enum values (Done)
 * Validating values in array
 * Highlighting duplicated keys / fields (Done for duplicated attributes)
 * Autocomplete of keys, types, defaults

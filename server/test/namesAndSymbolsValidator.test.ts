@@ -96,7 +96,7 @@ describe('NamesAndSymbolsValidator', () => {
 				ValidationSeverity.Error,
 				50,
 				56,
-				'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
+				'Namespace "1234" is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*([\\.\\-][A-Za-z_][A-Za-z0-9_]*)*'));
 		});
 	});
 
@@ -111,6 +111,7 @@ describe('NamesAndSymbolsValidator', () => {
 		['"Name_test_12"', true],
 		['"something76QWERTY"', true],
 		['"something.name.test"', true],
+		['"some-thing-name-test"', true],
 	].forEach(([namespace, isValid]: [string, boolean]) => {
 		it('validate namespace: ' + namespace + ' expected is valid: ' + isValid, () => {
 			const node = nodeWithoutBrackets(

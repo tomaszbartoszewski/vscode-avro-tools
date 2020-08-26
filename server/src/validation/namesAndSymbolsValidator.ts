@@ -6,7 +6,7 @@ import { CorrectSchemaWalker } from './correctSchemaWalker';
 export class NamesAndSymbolsValidator implements Validator {
 	private nameRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*\"$');
 	private symbolRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*\"$');
-	private namespaceRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*\"$');
+	private namespaceRegex = new RegExp('^\"[A-Za-z_][A-Za-z0-9_]*([\.\-][A-Za-z_][A-Za-z0-9_]*)*\"$');
 
 	validate(tree: Tree): ValidationMessage[] {
 		const messageAggregator = new ValidationMessageAggregator();
@@ -57,12 +57,14 @@ export class NamesAndSymbolsValidator implements Validator {
 	private validateNamespace(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof StringToken) {
 			const namespace = attribute.value.value;
+			console.log(namespace);
 			if (!this.namespaceRegex.test(namespace)) {
+				console.log('Failed');
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
 					attribute.value.getEndPosition(),
-					'Namespace ' + namespace + ' is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*'));
+					'Namespace ' + namespace + ' is not matching a regular expression [A-Za-z_][A-Za-z0-9_]*([\\.\\-][A-Za-z_][A-Za-z0-9_]*)*'));
 			}
 		}
 	}
