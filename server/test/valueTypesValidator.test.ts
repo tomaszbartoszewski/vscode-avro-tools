@@ -122,4 +122,34 @@ describe('ValueTypesValidator', () => {
 			37,
 			'Fields have to be an array of JSON objects'));
 	});
+
+	it('validate symbols for enum are an array of strings', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"symbols"', 20), null, arrayNodeWithoutBrackets(new IntegerToken('11', 35)), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			35,
+			37,
+			'Symbols have to be an array of strings'));
+	});
+
+	it('validate symbols for enum are an array', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"symbols"', 20), null, new IntegerToken('11', 35), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			20,
+			37,
+			'Symbols have to be an array of strings'));
+	});
 });

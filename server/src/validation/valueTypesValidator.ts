@@ -34,6 +34,10 @@ export class ValueTypesValidator implements Validator {
 				const fieldsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"fields"');
 				this.validateFieldsType(fieldsAttribute, messageAggregator);
 			}
+			if (token.value === '"enum"') {
+				const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
+				this.validateSymbolsType(symbolsAttribute, messageAggregator);
+			}
 		}
 	}
 
@@ -108,6 +112,30 @@ export class ValueTypesValidator implements Validator {
 				const aliases = attribute.value as ArrayNode;
 				aliases.items.forEach(alias => {
 					if (!(alias.value instanceof ObjectNode)) {
+						addErrorMessage(alias.value ?? attribute);
+					}
+				});
+			}
+		}
+	}
+
+	private validateSymbolsType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		const addErrorMessage = function (range: HighlightRange) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				range.getStartPosition(),
+				range.getEndPosition(),
+				'Symbols have to be an array of strings'));
+		}
+
+		if (attribute instanceof KeyValuePair) {
+			if (!(attribute.value instanceof ArrayNode)) {
+				addErrorMessage(attribute);
+			}
+			else {
+				const aliases = attribute.value as ArrayNode;
+				aliases.items.forEach(alias => {
+					if (!(alias.value instanceof StringToken)) {
 						addErrorMessage(alias.value ?? attribute);
 					}
 				});
