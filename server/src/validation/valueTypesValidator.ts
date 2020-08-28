@@ -37,6 +37,8 @@ export class ValueTypesValidator implements Validator {
 			if (token.value === '"enum"') {
 				const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
 				this.validateSymbolsType(symbolsAttribute, messageAggregator);
+				const defaultAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"default"');
+				this.validateDefaultEnumType(defaultAttribute, messageAggregator);
 			}
 			if (token.value === '"fixed"') {
 				const sizeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"size"');
@@ -154,6 +156,16 @@ export class ValueTypesValidator implements Validator {
 				attribute.getStartPosition(),
 				attribute.getEndPosition(),
 				'Size has to be an int'));
+		}
+	}
+
+	private validateDefaultEnumType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		if (attribute instanceof KeyValuePair && !(attribute.value instanceof StringToken)) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				attribute.getStartPosition(),
+				attribute.getEndPosition(),
+				'Default has to be a string'));
 		}
 	}
 }

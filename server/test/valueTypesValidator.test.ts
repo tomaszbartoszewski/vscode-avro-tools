@@ -167,4 +167,19 @@ describe('ValueTypesValidator', () => {
 			34,
 			'Size has to be an int'));
 	});
+
+	it('validate default of enum is a string', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"enum"', 10), null),
+			keyValuePair(new StringToken('"default"', 20), null, new IntegerToken('11', 30), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			20,
+			32,
+			'Default has to be a string'));
+	});
 });
