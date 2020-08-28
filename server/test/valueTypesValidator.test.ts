@@ -199,7 +199,21 @@ describe('ValueTypesValidator', () => {
 				ValidationSeverity.Error,
 				20,
 				37,
-				'Attribute ' + attribute + ' has to be a type definition'));
+				'Attribute ' + attribute + ' has to be a string a JSON object or a JSON array'));
 		});
+	});
+
+	it('validate type is a type definition', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new IntegerToken('11', 10), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			0,
+			12,
+			'Attribute "type" has to be a string a JSON object or a JSON array'));
 	});
 });

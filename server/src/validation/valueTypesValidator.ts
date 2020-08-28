@@ -16,6 +16,8 @@ export class ValueTypesValidator implements Validator {
 
 	private validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean) {
 		const type = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
+		this.validateIsTypeDefinition(type, messageAggregator);
+
 		if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 			const token: StringToken = type.value;
 			if (token.value === '"record"' || token.value === '"enum"' || token.value === '"fixed"') {
@@ -184,7 +186,7 @@ export class ValueTypesValidator implements Validator {
 				ValidationSeverity.Error,
 				attribute.getStartPosition(),
 				attribute.getEndPosition(),
-				'Attribute ' + attribute.key.value + ' has to be a type definition'));
+				'Attribute ' + attribute.key.value + ' has to be a string a JSON object or a JSON array'));
 		}
 	}
 }
