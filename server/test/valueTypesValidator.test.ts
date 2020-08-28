@@ -58,4 +58,21 @@ describe('ValueTypesValidator', () => {
 				'Aliases have to be an array of strings'));
 		});
 	});
+
+	['"record"', '"enum"'].forEach((type) => {
+		it('validate doc is a string for type ' + type, () => {
+			const node = nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken(type, 10), null),
+				keyValuePair(new StringToken('"doc"', 20), null, new IntegerToken('11', 35), null)
+			);
+	
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
+				20,
+				37,
+				'Doc has to be a string'));
+		});
+	});
 });

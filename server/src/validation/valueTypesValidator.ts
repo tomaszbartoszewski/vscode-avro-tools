@@ -25,6 +25,10 @@ export class ValueTypesValidator implements Validator {
 				const aliasesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"aliases"');
 				this.validateAliasesType(aliasesAttribute, messageAggregator);
 			}
+			if (token.value === '"record"' || token.value === '"enum"') {
+				const docAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"doc"');
+				this.validateDocType(docAttribute, messageAggregator);
+			}
 		}
 	}
 
@@ -71,6 +75,16 @@ export class ValueTypesValidator implements Validator {
 					attribute.getEndPosition(),
 					'Aliases have to be an array of strings'));
 			}
+		}
+	}
+
+	private validateDocType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		if (attribute instanceof KeyValuePair && !(attribute.value instanceof StringToken)) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				attribute.getStartPosition(),
+				attribute.getEndPosition(),
+				'Doc has to be a string'));
 		}
 	}
 }
