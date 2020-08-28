@@ -1,7 +1,7 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
 import { Tree, ObjectNode, KeyValuePair, ArrayNode } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
-import { StringToken } from '../tokens';
+import { StringToken, IntegerToken } from '../tokens';
 import { HighlightRange } from '../highlightsRange';
 
 export class ValueTypesValidator implements Validator {
@@ -37,6 +37,10 @@ export class ValueTypesValidator implements Validator {
 			if (token.value === '"enum"') {
 				const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
 				this.validateSymbolsType(symbolsAttribute, messageAggregator);
+			}
+			if (token.value === '"fixed"') {
+				const sizeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"size"');
+				this.validateSizeType(sizeAttribute, messageAggregator);
 			}
 		}
 	}
@@ -140,6 +144,16 @@ export class ValueTypesValidator implements Validator {
 					}
 				});
 			}
+		}
+	}
+
+	private validateSizeType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		if (attribute instanceof KeyValuePair && !(attribute.value instanceof IntegerToken)) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				attribute.getStartPosition(),
+				attribute.getEndPosition(),
+				'Size has to be an int'));
 		}
 	}
 }

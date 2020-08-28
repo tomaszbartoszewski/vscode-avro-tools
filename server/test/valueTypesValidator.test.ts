@@ -152,4 +152,19 @@ describe('ValueTypesValidator', () => {
 			37,
 			'Symbols have to be an array of strings'));
 	});
+
+	it('validate size of fixed is an int', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"fixed"', 10), null),
+			keyValuePair(new StringToken('"size"', 20), null, new StringToken('"11"', 30), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			20,
+			34,
+			'Size has to be an int'));
+	});
 });
