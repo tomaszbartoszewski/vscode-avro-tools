@@ -1,7 +1,8 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
 import { Tree, ObjectNode, KeyValuePair, ArrayNode } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
-import { StringToken, Token } from '../tokens';
+import { StringToken } from '../tokens';
+import { HighlightRange } from '../highlightsRange';
 
 export class ValueTypesValidator implements Validator {
 	validate(tree: Tree): ValidationMessage[] {
@@ -29,6 +30,10 @@ export class ValueTypesValidator implements Validator {
 				const docAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"doc"');
 				this.validateDocType(docAttribute, messageAggregator);
 			}
+			if (token.value === '"record"') {
+				const fieldsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"fields"');
+				this.validateFieldsType(fieldsAttribute, messageAggregator);
+			}
 		}
 	}
 
@@ -53,27 +58,25 @@ export class ValueTypesValidator implements Validator {
 	}
 
 	private validateAliasesType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
-		let isCorrect = true;
-		
+		const addErrorMessage = function (range: HighlightRange) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				range.getStartPosition(),
+				range.getEndPosition(),
+				'Aliases have to be an array of strings'));
+		}
+
 		if (attribute instanceof KeyValuePair) {
 			if (!(attribute.value instanceof ArrayNode)) {
-				isCorrect = false;
+				addErrorMessage(attribute);
 			}
 			else {
 				const aliases = attribute.value as ArrayNode;
 				aliases.items.forEach(alias => {
 					if (!(alias.value instanceof StringToken)) {
-						isCorrect = false;
+						addErrorMessage(alias.value ?? attribute);
 					}
 				});
-			}
-
-			if (!isCorrect) {
-				messageAggregator.addMessage(new ValidationMessage(
-					ValidationSeverity.Error,
-					attribute.getStartPosition(),
-					attribute.getEndPosition(),
-					'Aliases have to be an array of strings'));
 			}
 		}
 	}
@@ -85,6 +88,30 @@ export class ValueTypesValidator implements Validator {
 				attribute.getStartPosition(),
 				attribute.getEndPosition(),
 				'Doc has to be a string'));
+		}
+	}
+
+	private validateFieldsType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		const addErrorMessage = function (range: HighlightRange) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				range.getStartPosition(),
+				range.getEndPosition(),
+				'Fields have to be an array of JSON objects'));
+		}
+
+		if (attribute instanceof KeyValuePair) {
+			if (!(attribute.value instanceof ArrayNode)) {
+				addErrorMessage(attribute);
+			}
+			else {
+				const aliases = attribute.value as ArrayNode;
+				aliases.items.forEach(alias => {
+					if (!(alias.value instanceof ObjectNode)) {
+						addErrorMessage(alias.value ?? attribute);
+					}
+				});
+			}
 		}
 	}
 }

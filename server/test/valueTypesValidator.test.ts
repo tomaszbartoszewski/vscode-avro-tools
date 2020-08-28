@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import { StringToken, FreeTextToken, IntegerToken } from '../src/tokens';
-import { ObjectNode, Tree } from '../src/syntaxTree';
+import { ObjectNode, Tree, ArrayNode } from '../src/syntaxTree';
 import { nodeWithoutBrackets, keyValuePair, arrayNode, arrayNodeWithoutBrackets } from './syntaxTreeUtils';
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
 import { ValueTypesValidator } from '../src/validation/valueTypesValidator';
@@ -53,6 +53,23 @@ describe('ValueTypesValidator', () => {
 			assert.equal(highlights.length, 1);
 			assert.deepEqual(highlights[0], new ValidationMessage(
 				ValidationSeverity.Error,
+				45,
+				47,
+				'Aliases have to be an array of strings'));
+		});
+	});
+
+	['"record"', '"enum"', '"fixed"'].forEach((type) => {
+		it('validate aliases is an array for type ' + type, () => {
+			const node = nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken(type, 10), null),
+				keyValuePair(new StringToken('"aliases"', 20), null, new IntegerToken('11', 45), null)
+			);
+	
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
 				20,
 				47,
 				'Aliases have to be an array of strings'));
@@ -74,5 +91,35 @@ describe('ValueTypesValidator', () => {
 				37,
 				'Doc has to be a string'));
 		});
+	});
+
+	it('validate fields are an array of objects', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"record"', 10), null),
+			keyValuePair(new StringToken('"fields"', 20), null, arrayNodeWithoutBrackets(new IntegerToken('11', 35)), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			35,
+			37,
+			'Fields have to be an array of JSON objects'));
+	});
+
+	it('validate fields are an array', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"record"', 10), null),
+			keyValuePair(new StringToken('"fields"', 20), null, new IntegerToken('11', 35), null)
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			20,
+			37,
+			'Fields have to be an array of JSON objects'));
 	});
 });
