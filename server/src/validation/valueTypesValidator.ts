@@ -17,18 +17,30 @@ export class ValueTypesValidator implements Validator {
 	private validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean) {
 		const type = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 		this.validateIsTypeDefinition(type, messageAggregator);
+		if (isField) {
+			const nameAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"name"');
+			this.validateNameType(nameAttribute, messageAggregator);
+			const docAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"doc"');
+			this.validateDocType(docAttribute, messageAggregator);
+			const aliasesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"aliases"');
+			this.validateAliasesType(aliasesAttribute, messageAggregator);
+			const orderAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"order"');
+			this.validateOrderType(orderAttribute, messageAggregator);
+		}
 
 		if (type instanceof KeyValuePair && type.value instanceof StringToken) {
 			const token: StringToken = type.value;
 			if (token.value === '"record"' || token.value === '"enum"' || token.value === '"fixed"') {
-				const nameAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"name"');
-				this.validateNameType(nameAttribute, messageAggregator);
+				if (!isField) {
+					const nameAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"name"');
+					this.validateNameType(nameAttribute, messageAggregator);
+					const aliasesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"aliases"');
+					this.validateAliasesType(aliasesAttribute, messageAggregator);
+				}
 				const namespaceAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"namespace"');
 				this.validateNamespaceType(namespaceAttribute, messageAggregator);
-				const aliasesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"aliases"');
-				this.validateAliasesType(aliasesAttribute, messageAggregator);
 			}
-			if (token.value === '"record"' || token.value === '"enum"') {
+			if ((token.value === '"record"' || token.value === '"enum"') && !isField) {
 				const docAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"doc"');
 				this.validateDocType(docAttribute, messageAggregator);
 			}
@@ -186,7 +198,17 @@ export class ValueTypesValidator implements Validator {
 				ValidationSeverity.Error,
 				attribute.getStartPosition(),
 				attribute.getEndPosition(),
-				'Attribute ' + attribute.key.value + ' has to be a string a JSON object or a JSON array'));
+				'Attribute ' + attribute.key.value + ' has to be a string, a JSON object, or a JSON array'));
+		}
+	}
+
+	private validateOrderType(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		if (attribute instanceof KeyValuePair && !(attribute.value instanceof StringToken)) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				attribute.getStartPosition(),
+				attribute.getEndPosition(),
+				'Attribute "order" has to be a string'));
 		}
 	}
 }

@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import { StringToken, FreeTextToken, IntegerToken } from '../src/tokens';
-import { ObjectNode, Tree, ArrayNode } from '../src/syntaxTree';
-import { nodeWithoutBrackets, keyValuePair, arrayNode, arrayNodeWithoutBrackets } from './syntaxTreeUtils';
+import { StringToken, IntegerToken, CommaToken } from '../src/tokens';
+import { Tree } from '../src/syntaxTree';
+import { nodeWithoutBrackets, keyValuePair, arrayNodeWithoutBrackets, validRecordWithField } from './syntaxTreeUtils';
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
 import { ValueTypesValidator } from '../src/validation/valueTypesValidator';
 
@@ -199,7 +199,7 @@ describe('ValueTypesValidator', () => {
 				ValidationSeverity.Error,
 				20,
 				37,
-				'Attribute ' + attribute + ' has to be a string a JSON object or a JSON array'));
+				'Attribute ' + attribute + ' has to be a string, a JSON object, or a JSON array'));
 		});
 	});
 
@@ -214,6 +214,43 @@ describe('ValueTypesValidator', () => {
 			ValidationSeverity.Error,
 			0,
 			12,
-			'Attribute "type" has to be a string a JSON object or a JSON array'));
+			'Attribute "type" has to be a string, a JSON object, or a JSON array'));
+	});
+
+	it('validate name of field is a string', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"name"', 20), null, new IntegerToken('11', 30), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+	});
+
+	it('validate doc of field is a string', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"doc"', 20), null, new IntegerToken('11', 30), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+	});
+
+	it('validate aliases of field are an array of strings', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"aliases"', 20), null, arrayNodeWithoutBrackets(new StringToken('"Correct"', 35), new IntegerToken('11', 45)), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+	});
+
+	it('validate order of field is a string', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"order"', 20), null, new IntegerToken('11', 30), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			20,
+			32,
+			'Attribute "order" has to be a string'));
 	});
 });

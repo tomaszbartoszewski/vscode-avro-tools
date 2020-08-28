@@ -79,3 +79,18 @@ export function arrayNodeWithoutBrackets(...values: (Token|ObjectNode)[]): Array
 	});
 	return arrayNode;
 }
+
+export function validRecordWithField(...fields: KeyValuePair[]) {
+	const childNode = nodeWithoutBrackets(
+		...fields
+		// keyValuePair(new StringToken('"name"', 20), null, new StringToken('"Test"', 30), null)
+	);
+
+	const fieldsNode = arrayNodeWithoutBrackets(childNode);
+
+	return nodeWithoutBrackets(
+		keyValuePair(new StringToken('"name"', 1), null, new StringToken('"Test"', 9), new CommaToken(',', 15)),
+		keyValuePair(new StringToken('"type"', 20), null, new StringToken('"record"', 29), null),
+		keyValuePair(new StringToken('"fields"', 35), null, fieldsNode, null),
+	);
+}
