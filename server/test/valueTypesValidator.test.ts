@@ -182,4 +182,24 @@ describe('ValueTypesValidator', () => {
 			32,
 			'Default has to be a string'));
 	});
+
+	[
+		['"array"', '"items"'],
+		['"map"', '"values"']
+	].forEach(([type, attribute]) => {
+		it('validate attribute ' + attribute + ' is a type definition for type ' + type, () => {
+			const node = nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken(type, 10), null),
+				keyValuePair(new StringToken(attribute, 20), null, new IntegerToken('11', 35), null)
+			);
+
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, 1);
+			assert.deepEqual(highlights[0], new ValidationMessage(
+				ValidationSeverity.Error,
+				20,
+				37,
+				'Attribute ' + attribute + ' has to be a type definition'));
+		});
+	});
 });

@@ -44,6 +44,14 @@ export class ValueTypesValidator implements Validator {
 				const sizeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"size"');
 				this.validateSizeType(sizeAttribute, messageAggregator);
 			}
+			if (token.value === '"array"') {
+				const itemsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"items"');
+				this.validateIsTypeDefinition(itemsAttribute, messageAggregator);
+			}
+			if (token.value === '"map"') {
+				const valuesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"values"');
+				this.validateIsTypeDefinition(valuesAttribute, messageAggregator);
+			}
 		}
 	}
 
@@ -166,6 +174,17 @@ export class ValueTypesValidator implements Validator {
 				attribute.getStartPosition(),
 				attribute.getEndPosition(),
 				'Default has to be a string'));
+		}
+	}
+
+	private validateIsTypeDefinition(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
+		if (attribute instanceof KeyValuePair && attribute.key instanceof StringToken && !(attribute.value instanceof StringToken)
+			&& !(attribute.value instanceof ObjectNode) && !(attribute.value instanceof ArrayNode)) {
+			messageAggregator.addMessage(new ValidationMessage(
+				ValidationSeverity.Error,
+				attribute.getStartPosition(),
+				attribute.getEndPosition(),
+				'Attribute ' + attribute.key.value + ' has to be a type definition'));
 		}
 	}
 }
