@@ -1,5 +1,7 @@
 # avro-tools
 
+[![Build Status](https://dev.azure.com/tomaszbartoszewski/vscode-avro-tools/_apis/build/status/tomaszbartoszewski.vscode-avro-tools?branchName=main)](https://dev.azure.com/tomaszbartoszewski/vscode-avro-tools/_build/latest?definitionId=1&branchName=main)
+
 This is an extension to validate Avro schema in `.avsc` files. It does schema highlighting using TextMate engine. Autocomplete is not implemented.
 
 It is not yet released as it doesn't have stable functionality.
