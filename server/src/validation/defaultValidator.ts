@@ -47,6 +47,9 @@ export class DefaultValidator implements Validator {
 							addErrorMessage(defaultAttribute, 'Default value for type "int" has to be a 32-bit signed integer');
 						}
 					}
+					else if (typeToken.value === '"long"' && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number, so far what I read JS supports 53-bit
+						addErrorMessage(defaultAttribute, 'Default value for type "long" has to be a 64-bit signed integer');
+					}
 				}
 			}
 		}

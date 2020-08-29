@@ -86,4 +86,27 @@ describe('DefaultValidator', () => {
 			assert.equal(highlights.length, numberOfErrors);
 		});
 	});
+
+	it('Type long can only have integer number', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"long"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new PrecisionNumberToken('1.0', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			53,
+			'Default value for type "long" has to be a 64-bit signed integer'));
+	});
+
+	it('Long type correct default', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"long"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new IntegerToken('12', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
 });
