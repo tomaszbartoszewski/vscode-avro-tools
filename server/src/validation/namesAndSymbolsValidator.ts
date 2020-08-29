@@ -57,9 +57,7 @@ export class NamesAndSymbolsValidator implements Validator {
 	private validateNamespace(attribute: KeyValuePair | undefined, messageAggregator: ValidationMessageAggregator) {
 		if (attribute instanceof KeyValuePair && attribute.value instanceof StringToken) {
 			const namespace = attribute.value.value;
-			console.log(namespace);
 			if (!this.namespaceRegex.test(namespace)) {
-				console.log('Failed');
 				messageAggregator.addMessage(new ValidationMessage(
 					ValidationSeverity.Error,
 					attribute.value.getStartPosition(),
