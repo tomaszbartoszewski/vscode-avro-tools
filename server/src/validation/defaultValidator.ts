@@ -1,7 +1,7 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
 import { Tree, ObjectNode, KeyValuePair } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
-import { StringToken, NullToken, BoolToken, IntegerToken } from '../tokens';
+import { StringToken, NullToken, BoolToken, IntegerToken, PrecisionNumberToken } from '../tokens';
 import { HighlightRange } from '../highlightsRange';
 
 export class DefaultValidator implements Validator {
@@ -49,6 +49,12 @@ export class DefaultValidator implements Validator {
 					}
 					else if (typeToken.value === '"long"' && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number, so far what I read JS supports 53-bit
 						addErrorMessage(defaultAttribute, 'Default value for type "long" has to be a 64-bit signed integer');
+					}
+					else if (typeToken.value === '"float"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 32-bit number
+						addErrorMessage(defaultAttribute, 'Default value for type "float" has to be a 32-bit single precision floating-point number');
+					}
+					else if (typeToken.value === '"double"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number
+						addErrorMessage(defaultAttribute, 'Default value for type "double" has to be a 64-bit double precision floating-point number');
 					}
 				}
 			}

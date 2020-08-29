@@ -109,4 +109,68 @@ describe('DefaultValidator', () => {
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 0);
 	});
+
+	it('Type float can only be a number', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"float"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new StringToken('"x"', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			53,
+			'Default value for type "float" has to be a 32-bit single precision floating-point number'));
+	});
+
+	it('Float type correct default', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"float"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new PrecisionNumberToken('12.95', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
+
+	it('Float type int default is accepted', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"float"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new IntegerToken('12', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
+
+	it('Type double can only be a number', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"double"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new StringToken('"x"', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			53,
+			'Default value for type "double" has to be a 64-bit double precision floating-point number'));
+	});
+
+	it('Double type correct default', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"double"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new PrecisionNumberToken('12.95', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
+
+	it('Double type int default is accepted', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"double"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new IntegerToken('12', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
 });
