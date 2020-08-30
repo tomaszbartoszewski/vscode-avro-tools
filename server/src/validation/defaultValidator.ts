@@ -119,6 +119,12 @@ export class DefaultValidator implements Validator {
 				return this.isValidDefaultForType(typeToken.items[0].value, defaultAttribute, node);
 			}
 		}
+		else if (typeToken instanceof ObjectNode) {
+			const typeAttribute = typeToken.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
+			if (typeAttribute instanceof KeyValuePair) {
+				return this.isValidDefaultForType(typeAttribute.value, defaultAttribute, node);
+			}
+		}
 		return true;
 	}
 

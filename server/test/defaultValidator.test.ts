@@ -521,4 +521,25 @@ describe('DefaultValidator', () => {
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 0);
 	});
+
+	it('Union type first type is record', () => {
+		const types = arrayNodeWithoutBrackets(
+			nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 30), null, new StringToken('"record"', 40), null),
+			),
+			new StringToken('"null"', 50)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, types, null),
+			keyValuePair(new StringToken('"default"', 60), null, new NullToken('null', 70), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			60,
+			74,
+			'Default value for union type has to match first type from the union'));
+	});
 });
