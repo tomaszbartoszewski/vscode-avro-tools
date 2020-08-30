@@ -29,90 +29,95 @@ export class DefaultValidator implements Validator {
 			const typeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 			const defaultAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"default"');
 			if (defaultAttribute instanceof KeyValuePair) {
-				if (typeAttribute instanceof KeyValuePair && typeAttribute.value instanceof StringToken) {
-					const typeToken: StringToken = typeAttribute.value;
-					if (!this.isValidDefaultForType(typeToken, defaultAttribute, node)) {
-						addErrorMessage(defaultAttribute, this.getErrorMessageForType(typeToken));
+				if (typeAttribute instanceof KeyValuePair) {
+					if (!this.isValidDefaultForType(typeAttribute.value, defaultAttribute, node)) {
+						addErrorMessage(defaultAttribute, this.getErrorMessageForType(typeAttribute.value));
 					}
 				}
 			}
 		}
 	}
 
-	
-	private isValidDefaultForType(typeToken: StringToken, defaultAttribute: KeyValuePair | ArrayItem, node: ObjectNode): boolean {
-		if (typeToken.value === '"null"' && !(defaultAttribute.value instanceof NullToken)) {
-			return false;
-		}
-		else if (typeToken.value === '"boolean"' && !(defaultAttribute.value instanceof BoolToken)) {
-			return false;
-		}
-		else if (typeToken.value === '"int"') {
-			if (defaultAttribute.value instanceof IntegerToken) {
-				const token = defaultAttribute.value;
-				const intValue = Number(token.value);
-				if (intValue > 2147483647 || intValue < -2147483648) {
+	private isValidDefaultForType(typeToken: ObjectNode | StringToken | ArrayNode | null, defaultAttribute: KeyValuePair | ArrayItem, node: ObjectNode): boolean {
+		if (typeToken instanceof StringToken) {
+			if (typeToken.value === '"null"' && !(defaultAttribute.value instanceof NullToken)) {
+				return false;
+			}
+			else if (typeToken.value === '"boolean"' && !(defaultAttribute.value instanceof BoolToken)) {
+				return false;
+			}
+			else if (typeToken.value === '"int"') {
+				if (defaultAttribute.value instanceof IntegerToken) {
+					const token = defaultAttribute.value;
+					const intValue = Number(token.value);
+					if (intValue > 2147483647 || intValue < -2147483648) {
+						return false;
+					}
+				}
+				else {
 					return false;
 				}
 			}
-			else {
+			else if (typeToken.value === '"long"' && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number, so far what I read JS supports 53-bit
+				return false;
+			}
+			else if (typeToken.value === '"float"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 32-bit number
+				return false;
+			}
+			else if (typeToken.value === '"double"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number
+				return false;
+			}
+			else if (typeToken.value === '"string"' && !(defaultAttribute.value instanceof StringToken)) {
+				return false;
+			}
+			else if (typeToken.value === '"bytes"' && !this.isCorrectUnicodeDefault(defaultAttribute.value)) {
+				return false;
+			}
+			else if (typeToken.value === '"fixed"' && !this.isCorrectUnicodeDefault(defaultAttribute.value)) {
+				return false;
+			}
+			else if (typeToken.value === '"enum"') {
+				const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
+				if (symbolsAttribute instanceof KeyValuePair && !this.isCorrectEnumDefault(defaultAttribute.value, symbolsAttribute.value)){
+					return false;
+				}
+			}
+			else if (typeToken.value === '"array"') {
+				const itemsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"items"');
+				if (itemsAttribute instanceof KeyValuePair) {
+					// to be an enum it would have to be an object as items, everything else can live with empty node,
+					// it's too much self aware, but it can be changed later, for now I only handle primitive types as items
+					let itemsTypeNode = new ObjectNode();
+					if (itemsAttribute.value instanceof ObjectNode) {
+						itemsTypeNode = itemsAttribute.value;
+					}
+					if (!this.isCorrectArrayDefault(defaultAttribute.value, itemsAttribute.value, itemsTypeNode)){
+						return false;
+					}
+				}
+			}
+			else if (typeToken.value === '"map"') {
+				const valuesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"values"');
+				if (valuesAttribute instanceof KeyValuePair) {
+					// to be an enum it would have to be an object as values, everything else can live with empty node,
+					// it's too much self aware, but it can be changed later, for now I only handle primitive types as values
+					let valuesTypeNode = new ObjectNode();
+					if (valuesAttribute.value instanceof ObjectNode) {
+						valuesTypeNode = valuesAttribute.value;
+					}
+					if (!this.isCorrectMapDefault(defaultAttribute.value, valuesAttribute.value, valuesTypeNode)){
+						return false;
+					}
+				}
+			}
+			else if (typeToken.value === '"record"' && !(defaultAttribute.value instanceof ObjectNode)) { // TODO it should check if fields are matching, but that requires more work, will implement in the future
 				return false;
 			}
 		}
-		else if (typeToken.value === '"long"' && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number, so far what I read JS supports 53-bit
-			return false;
-		}
-		else if (typeToken.value === '"float"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 32-bit number
-			return false;
-		}
-		else if (typeToken.value === '"double"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number
-			return false;
-		}
-		else if (typeToken.value === '"string"' && !(defaultAttribute.value instanceof StringToken)) {
-			return false;
-		}
-		else if (typeToken.value === '"bytes"' && !this.isCorrectUnicodeDefault(defaultAttribute.value)) {
-			return false;
-		}
-		else if (typeToken.value === '"fixed"' && !this.isCorrectUnicodeDefault(defaultAttribute.value)) {
-			return false;
-		}
-		else if (typeToken.value === '"enum"') {
-			const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
-			if (symbolsAttribute instanceof KeyValuePair && !this.isCorrectEnumDefault(defaultAttribute.value, symbolsAttribute.value)){
-				return false;
+		else if (typeToken instanceof ArrayNode) {
+			if (typeToken.items.length > 0) {
+				return this.isValidDefaultForType(typeToken.items[0].value, defaultAttribute, node);
 			}
-		}
-		else if (typeToken.value === '"array"') {
-			const itemsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"items"');
-			if (itemsAttribute instanceof KeyValuePair) {
-				// to be an enum it would have to be an object as items, everything else can live with empty node,
-				// it's too much self aware, but it can be changed later, for now I only handle primitive types as items
-				let itemsTypeNode = new ObjectNode();
-				if (itemsAttribute.value instanceof ObjectNode) {
-					itemsTypeNode = itemsAttribute.value;
-				}
-				if (!this.isCorrectArrayDefault(defaultAttribute.value, itemsAttribute.value, itemsTypeNode)){
-					return false;
-				}
-			}
-		}
-		else if (typeToken.value === '"map"') {
-			const valuesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"values"');
-			if (valuesAttribute instanceof KeyValuePair) {
-				// to be an enum it would have to be an object as values, everything else can live with empty node,
-				// it's too much self aware, but it can be changed later, for now I only handle primitive types as values
-				let valuesTypeNode = new ObjectNode();
-				if (valuesAttribute.value instanceof ObjectNode) {
-					valuesTypeNode = valuesAttribute.value;
-				}
-				if (!this.isCorrectMapDefault(defaultAttribute.value, valuesAttribute.value, valuesTypeNode)){
-					return false;
-				}
-			}
-		}
-		else if (typeToken.value === '"record"' && !(defaultAttribute.value instanceof ObjectNode)) { // TODO it should check if fields are matching, but that requires more work, will implement in the future
-			return false;
 		}
 		return true;
 	}
@@ -184,36 +189,40 @@ export class DefaultValidator implements Validator {
 		return isValidMap;
 	}
 
-	private getErrorMessageForType(typeToken: StringToken): string {
-		switch (typeToken.value) {
-			case '"null"':
-				return 'Default value for type "null" has to be a null';
-			case '"boolean"':
-				return 'Default value for type "boolean" has to be true or false';
-			case '"int"':
-				return 'Default value for type "int" has to be a 32-bit signed integer';
-			case '"long"':
-				return 'Default value for type "long" has to be a 64-bit signed integer';
-			case '"float"':
-				return 'Default value for type "float" has to be a 32-bit single precision floating-point number';
-			case '"double"':
-				return 'Default value for type "double" has to be a 64-bit double precision floating-point number';
-			case '"string"':
-				return 'Default value for type "string" has to be a string';
-			case '"bytes"':
-				return 'Default value for type "bytes" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048';
-			case '"fixed"':
-				return 'Default value for type "fixed" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048';
-			case '"enum"':
-				return 'Default value for type "enum" has to be a string from symbols array';
-			case '"array"':
-				return 'Default value for type "array" is not correct';
-			case '"map"':
-				return 'Default value for type "map" is not correct, it has to have unique string keys and values matching values type';
-			case '"record"':
-				return 'Default value for type "record" has to be a JSON object';
-			default:
-				return 'Default value is not matching type';
+	private getErrorMessageForType(typeToken: ObjectNode | StringToken | ArrayNode | null): string {
+		if (typeToken instanceof StringToken) {
+			switch (typeToken.value) {
+				case '"null"':
+					return 'Default value for type "null" has to be a null';
+				case '"boolean"':
+					return 'Default value for type "boolean" has to be true or false';
+				case '"int"':
+					return 'Default value for type "int" has to be a 32-bit signed integer';
+				case '"long"':
+					return 'Default value for type "long" has to be a 64-bit signed integer';
+				case '"float"':
+					return 'Default value for type "float" has to be a 32-bit single precision floating-point number';
+				case '"double"':
+					return 'Default value for type "double" has to be a 64-bit double precision floating-point number';
+				case '"string"':
+					return 'Default value for type "string" has to be a string';
+				case '"bytes"':
+					return 'Default value for type "bytes" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048';
+				case '"fixed"':
+					return 'Default value for type "fixed" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048';
+				case '"enum"':
+					return 'Default value for type "enum" has to be a string from symbols array';
+				case '"array"':
+					return 'Default value for type "array" is not correct';
+				case '"map"':
+					return 'Default value for type "map" is not correct, it has to have unique string keys and values matching values type';
+				case '"record"':
+					return 'Default value for type "record" has to be a JSON object';
+			}
 		}
+		else if (typeToken instanceof ArrayNode) {
+			return 'Default value for union type has to match first type from the union';
+		}
+		return 'Default value is not matching type';
 	}
 }

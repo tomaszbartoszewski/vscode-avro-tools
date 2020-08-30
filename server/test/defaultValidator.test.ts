@@ -487,4 +487,38 @@ describe('DefaultValidator', () => {
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 0);
 	});
+
+	it('Union type can only have default of first type', () => {
+		const types = arrayNodeWithoutBrackets(
+			new StringToken('"null"', 30),
+			new StringToken('"int"', 40)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, types, null),
+			keyValuePair(new StringToken('"default"', 50), null, new IntegerToken('11', 60), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			50,
+			62,
+			'Default value for union type has to match first type from the union'));
+	});
+
+	it('Union type correct default', () => {
+		const types = arrayNodeWithoutBrackets(
+			new StringToken('"null"', 30),
+			new StringToken('"int"', 40),
+			new StringToken('"string"', 50),
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, types, null),
+			keyValuePair(new StringToken('"default"', 60), null, new NullToken('null', 70), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
 });
