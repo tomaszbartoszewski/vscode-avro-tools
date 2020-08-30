@@ -56,6 +56,9 @@ export class DefaultValidator implements Validator {
 					else if (typeToken.value === '"double"' && !(defaultAttribute.value instanceof PrecisionNumberToken) && !(defaultAttribute.value instanceof IntegerToken)) { // TODO: Add extra checks to see if it is a 64-bit number
 						addErrorMessage(defaultAttribute, 'Default value for type "double" has to be a 64-bit double precision floating-point number');
 					}
+					else if (typeToken.value === '"string"' && !(defaultAttribute.value instanceof StringToken)) {
+						addErrorMessage(defaultAttribute, 'Default value for type "string" has to be a string');
+					}
 				}
 			}
 		}

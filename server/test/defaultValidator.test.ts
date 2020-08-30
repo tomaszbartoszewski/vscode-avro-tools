@@ -173,4 +173,27 @@ describe('DefaultValidator', () => {
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 0);
 	});
+
+	it('String type can only have default string', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"string"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new IntegerToken('11', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			52,
+			'Default value for type "string" has to be a string'));
+	});
+
+	it('String type correct default', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"string"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new StringToken('"something"', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
+	});
 });
