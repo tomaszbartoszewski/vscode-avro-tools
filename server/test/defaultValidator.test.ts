@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { Tree } from '../src/syntaxTree';
+import { Tree, KeyValuePair } from '../src/syntaxTree';
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators'
 import { DefaultValidator } from '../src/validation/defaultValidator'
 import { StringToken, Token, IntegerToken, NullToken, BoolToken, PrecisionNumberToken } from '../src/tokens';
-import { keyValuePair, arrayNodeWithoutBrackets, validRecordWithField } from './syntaxTreeUtils';
+import { keyValuePair, arrayNodeWithoutBrackets, validRecordWithField, nodeWithoutBrackets } from './syntaxTreeUtils';
 
 describe('DefaultValidator', () => {
 	const validator = new DefaultValidator();
@@ -223,7 +223,7 @@ describe('DefaultValidator', () => {
 		['"1234"', 1],
 		['"\\u00FF2334"', 1]
 	].forEach(([value, numberOfErrors]: [string, number]) => {
-		it('Bytes type right formatting value ' + value + ' number of errors ' + numberOfErrors , () => {
+		it('Bytes type right formatting value ' + value + ' number of errors ' + numberOfErrors, () => {
 			const node = validRecordWithField(
 				keyValuePair(new StringToken('"type"', 20), null, new StringToken('"bytes"', 30), null),
 				keyValuePair(new StringToken('"default"', 40), null, new StringToken(value, 50), null)
@@ -259,7 +259,7 @@ describe('DefaultValidator', () => {
 		['"1234"', 1],
 		['"\\u00FF2334"', 1]
 	].forEach(([value, numberOfErrors]: [string, number]) => {
-		it('Fixed type right formatting value ' + value + ' number of errors ' + numberOfErrors , () => {
+		it('Fixed type right formatting value ' + value + ' number of errors ' + numberOfErrors, () => {
 			const node = validRecordWithField(
 				keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
 				keyValuePair(new StringToken('"default"', 40), null, new StringToken(value, 50), null)
@@ -343,13 +343,123 @@ describe('DefaultValidator', () => {
 			const defaultValues = arrayNodeWithoutBrackets(
 				...defaults
 			);
-	
+
 			const node = validRecordWithField(
 				keyValuePair(new StringToken('"type"', 0), null, new StringToken('"array"', 10), null),
 				keyValuePair(new StringToken('"items"', 20), null, new StringToken(itemsType, 30), null),
 				keyValuePair(new StringToken('"default"', 40), null, defaultValues, null),
 			);
-	
+
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, numberOfErrors);
+		});
+	});
+
+	it('Map of strings type can only have default map of elements matching values schema', () => {
+		const defaultValues = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"a"', 50), null, new StringToken('"correct"', 55), null),
+			keyValuePair(new StringToken('"b"', 70), null, new IntegerToken('11', 75), null),
+			keyValuePair(new StringToken('"c"', 90), null, new StringToken('"other"', 95), null)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"map"', 10), null),
+			keyValuePair(new StringToken('"values"', 20), null, new StringToken('"string"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, defaultValues, null),
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			102,
+			'Default value for type "map" is not correct, it has to have unique string keys and values matching values type'));
+	});
+
+	it('Map of strings type can only have default map with unique keys', () => {
+		const defaultValues = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"a"', 50), null, new StringToken('"correct"', 55), null),
+			keyValuePair(new StringToken('"b"', 70), null, new StringToken('"correct"', 75), null),
+			keyValuePair(new StringToken('"a"', 90), null, new StringToken('"other"', 95), null)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"map"', 10), null),
+			keyValuePair(new StringToken('"values"', 20), null, new StringToken('"string"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, defaultValues, null),
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			102,
+			'Default value for type "map" is not correct, it has to have unique string keys and values matching values type'));
+	});
+
+	[
+		[
+			'"string"',
+			[
+				keyValuePair(new StringToken('"a"', 50), null, new StringToken('"correct"', 55), null)
+			],
+			0
+		],
+		[
+			'"int"',
+			[
+				keyValuePair(new StringToken('"a"', 50), null, new IntegerToken('11', 55), null),
+				keyValuePair(new StringToken('"b"', 60), null, new IntegerToken('45', 65), null)
+			],
+			0
+		],
+		[
+			'"boolean"',
+			[
+				keyValuePair(new StringToken('"a"', 50), null, new BoolToken('false', 55), null),
+				keyValuePair(new StringToken('"b"', 70), null, new BoolToken('true', 75), null)
+			],
+			0
+		],
+		[
+			'"bytes"',
+			[
+				keyValuePair(new StringToken('"a"', 50), null, new StringToken('"\\u00FA"', 55), null),
+				keyValuePair(new StringToken('"b"', 70), null, new StringToken('"\\u0011"', 75), null),
+				keyValuePair(new StringToken('"c"', 90), null, new StringToken('"\\u0012\\u0013"', 95), null)
+			],
+			0
+		],
+		[
+			'"bytes"',
+			[
+				keyValuePair(new StringToken('"a"', 50), null, new StringToken('"\\u00FA"', 55), null),
+				keyValuePair(new StringToken('"b"', 70), null, new BoolToken('false', 75), null)
+			],
+			1
+		],
+		[
+			'"int"',
+			[
+				keyValuePair(new StringToken('"a"', 50), null, new IntegerToken('11', 55), null),
+				keyValuePair(new StringToken('"b"', 70), null, new PrecisionNumberToken('2.4', 75), null)
+			],
+			1
+		]
+	].forEach(([itemsType, defaults, numberOfErrors]: [string, KeyValuePair[], number]) => {
+		it('Map of ' + itemsType + ' type correct default value ' + JSON.stringify(defaults) + ' number of errors ' + numberOfErrors, () => {
+			const defaultValues = nodeWithoutBrackets(
+				...defaults
+			);
+
+			const node = validRecordWithField(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken('"map"', 10), null),
+				keyValuePair(new StringToken('"values"', 20), null, new StringToken(itemsType, 30), null),
+				keyValuePair(new StringToken('"default"', 40), null, defaultValues, null),
+			);
+
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);
 		});

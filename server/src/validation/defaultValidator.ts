@@ -97,6 +97,20 @@ export class DefaultValidator implements Validator {
 				}
 			}
 		}
+		else if (typeToken.value === '"map"') {
+			const valuesAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"values"');
+			if (valuesAttribute instanceof KeyValuePair) {
+				// to be an enum it would have to be an object as values, everything else can live with empty node,
+				// it's too much self aware, but it can be changed later, for now I only handle primitive types as values
+				let valuesTypeNode = new ObjectNode();
+				if (valuesAttribute.value instanceof ObjectNode) {
+					valuesTypeNode = valuesAttribute.value;
+				}
+				if (!this.isCorrectMapDefault(defaultAttribute.value, valuesAttribute.value, valuesTypeNode)){
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -140,6 +154,33 @@ export class DefaultValidator implements Validator {
 		return isMatchingSchema;
 	}
 
+	private isCorrectMapDefault(defaultValue: Token | ObjectNode | ArrayNode | null, valuesValue: Token | ObjectNode | ArrayNode | null, node: ObjectNode): boolean {
+		if (!(defaultValue instanceof ObjectNode)) {
+			return false;
+		}
+		let isValidMap = true;
+		if (valuesValue instanceof StringToken) {
+			let mapKeys: Set<string> = new Set();
+			defaultValue.attributes.forEach(attribute => {
+				if (!(attribute.key instanceof StringToken)) {
+					isValidMap = false;
+					return;
+				}
+				if (mapKeys.has(attribute.key.value)) {
+					isValidMap = false;
+					return;
+				}
+				mapKeys.add(attribute.key.value);
+				if (!this.isValidDefaultForType(valuesValue, attribute, node)) {
+					isValidMap = false;
+					return;
+				}
+			});
+		}
+
+		return isValidMap;
+	}
+
 	private getErrorMessageForType(typeToken: StringToken): string {
 		switch (typeToken.value) {
 			case '"null"':
@@ -164,6 +205,8 @@ export class DefaultValidator implements Validator {
 				return 'Default value for type "enum" has to be a string from symbols array';
 			case '"array"':
 				return 'Default value for type "array" is not correct';
+			case '"map"':
+				return 'Default value for type "map" is not correct, it has to have unique string keys and values matching values type';
 			default:
 				return 'Default value is not matching type';
 		}
