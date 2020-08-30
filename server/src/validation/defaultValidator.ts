@@ -5,6 +5,8 @@ import { StringToken, NullToken, BoolToken, IntegerToken, PrecisionNumberToken }
 import { HighlightRange } from '../highlightsRange';
 
 export class DefaultValidator implements Validator {
+	private bytesDefaultRegex = new RegExp('^\"(\\\\u00[0-9A-Fa-f]{2})*\"$');
+
 	validate(tree: Tree): ValidationMessage[] {
 		const messageAggregator = new ValidationMessageAggregator();
 		const walker = new CorrectSchemaWalker((node, isField) => {
@@ -59,8 +61,15 @@ export class DefaultValidator implements Validator {
 					else if (typeToken.value === '"string"' && !(defaultAttribute.value instanceof StringToken)) {
 						addErrorMessage(defaultAttribute, 'Default value for type "string" has to be a string');
 					}
+					else if (typeToken.value === '"bytes"' && !this.isCorrectBytesDefault(defaultAttribute)) {
+						addErrorMessage(defaultAttribute, 'Default value for type "bytes" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048');
+					}
 				}
 			}
 		}
+	}
+
+	private isCorrectBytesDefault(defaultAttribute: KeyValuePair): boolean {
+		return defaultAttribute.value instanceof StringToken && this.bytesDefaultRegex.test(defaultAttribute.value.value);
 	}
 }
