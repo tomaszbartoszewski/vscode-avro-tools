@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { KeyValuePair, ArrayNode, ObjectNode, Tree, ArrayItem } from '../src/syntaxTree';
-import { Validator, ValidationMessage, ValidationSeverity } from '../src/validation/validators'
+import { Tree } from '../src/syntaxTree';
+import { ValidationMessage, ValidationSeverity } from '../src/validation/validators'
 import { DefaultValidator } from '../src/validation/defaultValidator'
-import { StringToken, Token, LeftBracketToken, RightBracketToken, IntegerToken, NullToken, BoolToken, PrecisionNumberToken } from '../src/tokens';
-import { nodeWithoutBrackets, keyValuePair, arrayNodeWithoutBrackets, validRecordWithField } from './syntaxTreeUtils';
+import { StringToken, Token, IntegerToken, NullToken, BoolToken, PrecisionNumberToken } from '../src/tokens';
+import { keyValuePair, arrayNodeWithoutBrackets, validRecordWithField } from './syntaxTreeUtils';
 
 describe('DefaultValidator', () => {
 	const validator = new DefaultValidator();
@@ -304,6 +304,52 @@ describe('DefaultValidator', () => {
 				keyValuePair(new StringToken('"symbols"', 40), null, symbols, null),
 				keyValuePair(new StringToken('"default"', 120), null, new StringToken(value, 140), null)
 			);
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, numberOfErrors);
+		});
+	});
+
+	it('Array of strings type can only have default array of elements matching items schema', () => {
+		const defaultValues = arrayNodeWithoutBrackets(
+			new StringToken('"correct"', 50),
+			new IntegerToken('12', 60),
+			new StringToken('"other"', 70)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 0), null, new StringToken('"array"', 10), null),
+			keyValuePair(new StringToken('"items"', 20), null, new StringToken('"string"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, defaultValues, null),
+		);
+
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			77,
+			'Default value for type "array" is not correct'));
+	});
+
+	[
+		['"string"', [new StringToken('"correct"', 50)], 0],
+		['"int"', [new IntegerToken('11', 50), new IntegerToken('45', 60)], 0],
+		['"boolean"', [new BoolToken('false', 50), new BoolToken('true', 60)], 0],
+		['"bytes"', [new StringToken('"\\u00FA"', 50), new StringToken('"\\u0011"', 60), new StringToken('"\\u0012\\u0013"', 60)], 0],
+		['"bytes"', [new StringToken('"\\u00FA"', 50), new BoolToken('false', 60)], 1],
+		['"int"', [new IntegerToken('11', 50), new PrecisionNumberToken('2.4', 60)], 1]
+	].forEach(([itemsType, defaults, numberOfErrors]: [string, Token[], number]) => {
+		it('Array of ' + itemsType + ' type correct default value ' + JSON.stringify(defaults) + ' number of errors ' + numberOfErrors, () => {
+			const defaultValues = arrayNodeWithoutBrackets(
+				...defaults
+			);
+	
+			const node = validRecordWithField(
+				keyValuePair(new StringToken('"type"', 0), null, new StringToken('"array"', 10), null),
+				keyValuePair(new StringToken('"items"', 20), null, new StringToken(itemsType, 30), null),
+				keyValuePair(new StringToken('"default"', 40), null, defaultValues, null),
+			);
+	
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);
 		});

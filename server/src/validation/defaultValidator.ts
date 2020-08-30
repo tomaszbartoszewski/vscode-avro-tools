@@ -1,5 +1,5 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
-import { Tree, ObjectNode, KeyValuePair, ArrayNode } from '../syntaxTree';
+import { Tree, ObjectNode, KeyValuePair, ArrayNode, ArrayItem } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
 import { StringToken, NullToken, BoolToken, IntegerToken, PrecisionNumberToken, Token } from '../tokens';
 import { HighlightRange } from '../highlightsRange';
@@ -39,30 +39,8 @@ export class DefaultValidator implements Validator {
 		}
 	}
 
-	private isCorrectUnicodeDefault(defaultValue: Token | ObjectNode | ArrayNode | null ): boolean {
-		return defaultValue instanceof StringToken && this.bytesDefaultRegex.test(defaultValue.value);
-	}
-
-	private isCorrectEnumDefault(defaultValue: Token | ObjectNode | ArrayNode | null, symbols: KeyValuePair): boolean {
-		if (!(defaultValue instanceof StringToken)) {
-			return false;
-		}
-		const defaultText = defaultValue.value;
-		let isOnSymbols = false;
-		if (symbols.value instanceof ArrayNode) {
-			symbols.value.items.forEach(symbol => {
-				if (symbol.value instanceof StringToken) {
-				}
-				if (symbol.value instanceof StringToken && symbol.value.value === defaultText) {
-					isOnSymbols = true;
-					return;
-				}
-			});
-		}
-		return isOnSymbols;
-	}
-
-	private isValidDefaultForType(typeToken: StringToken, defaultAttribute: KeyValuePair, node: ObjectNode): boolean {
+	
+	private isValidDefaultForType(typeToken: StringToken, defaultAttribute: KeyValuePair | ArrayItem, node: ObjectNode): boolean {
 		if (typeToken.value === '"null"' && !(defaultAttribute.value instanceof NullToken)) {
 			return false;
 		}
@@ -101,11 +79,65 @@ export class DefaultValidator implements Validator {
 		}
 		else if (typeToken.value === '"enum"') {
 			const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
-			if (symbolsAttribute instanceof KeyValuePair && !this.isCorrectEnumDefault(defaultAttribute.value, symbolsAttribute)){
+			if (symbolsAttribute instanceof KeyValuePair && !this.isCorrectEnumDefault(defaultAttribute.value, symbolsAttribute.value)){
 				return false;
 			}
 		}
+		else if (typeToken.value === '"array"') {
+			const itemsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"items"');
+			if (itemsAttribute instanceof KeyValuePair) {
+				// to be an enum it would have to be an object as items, everything else can live with empty node,
+				// it's too much self aware, but it can be changed later, for now I only handle primitive types as items
+				let itemsTypeNode = new ObjectNode();
+				if (itemsAttribute.value instanceof ObjectNode) {
+					itemsTypeNode = itemsAttribute.value;
+				}
+				if (!this.isCorrectArrayDefault(defaultAttribute.value, itemsAttribute.value, itemsTypeNode)){
+					return false;
+				}
+			}
+		}
 		return true;
+	}
+
+	private isCorrectUnicodeDefault(defaultValue: Token | ObjectNode | ArrayNode | null ): boolean {
+		return defaultValue instanceof StringToken && this.bytesDefaultRegex.test(defaultValue.value);
+	}
+
+	private isCorrectEnumDefault(defaultValue: Token | ObjectNode | ArrayNode | null, symbolsValue: Token | ObjectNode | ArrayNode | null): boolean {
+		if (!(defaultValue instanceof StringToken)) {
+			return false;
+		}
+		const defaultText = defaultValue.value;
+		let isOnSymbols = false;
+		if (symbolsValue instanceof ArrayNode) {
+			symbolsValue.items.forEach(symbol => {
+				if (symbol.value instanceof StringToken) {
+				}
+				if (symbol.value instanceof StringToken && symbol.value.value === defaultText) {
+					isOnSymbols = true;
+					return;
+				}
+			});
+		}
+		return isOnSymbols;
+	}
+
+	private isCorrectArrayDefault(defaultValue: Token | ObjectNode | ArrayNode | null, itemsValue: Token | ObjectNode | ArrayNode | null, node: ObjectNode): boolean {
+		if (!(defaultValue instanceof ArrayNode)) {
+			return false;
+		}
+		let isMatchingSchema = true;
+		if (itemsValue instanceof StringToken) {
+			defaultValue.items.forEach(item => {
+				if (!this.isValidDefaultForType(itemsValue, item, node)) {
+					isMatchingSchema = false;
+					return;
+				}
+			});
+		}
+
+		return isMatchingSchema;
 	}
 
 	private getErrorMessageForType(typeToken: StringToken): string {
@@ -130,6 +162,8 @@ export class DefaultValidator implements Validator {
 				return 'Default value for type "fixed" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048';
 			case '"enum"':
 				return 'Default value for type "enum" has to be a string from symbols array';
+			case '"array"':
+				return 'Default value for type "array" is not correct';
 			default:
 				return 'Default value is not matching type';
 		}
