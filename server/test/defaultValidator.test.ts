@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { Tree, KeyValuePair } from '../src/syntaxTree';
+import { Tree, KeyValuePair, ObjectNode } from '../src/syntaxTree';
 import { ValidationMessage, ValidationSeverity } from '../src/validation/validators'
 import { DefaultValidator } from '../src/validation/defaultValidator'
 import { StringToken, Token, IntegerToken, NullToken, BoolToken, PrecisionNumberToken } from '../src/tokens';
@@ -463,5 +463,28 @@ describe('DefaultValidator', () => {
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);
 		});
+	});
+
+	it('Record type can only have default JSON object', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"record"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new IntegerToken('11', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			52,
+			'Default value for type "record" has to be a JSON object'));
+	});
+
+	it('Record type correct default type', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"record"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new ObjectNode(), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
 	});
 });

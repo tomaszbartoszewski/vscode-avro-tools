@@ -111,6 +111,9 @@ export class DefaultValidator implements Validator {
 				}
 			}
 		}
+		else if (typeToken.value === '"record"' && !(defaultAttribute.value instanceof ObjectNode)) { // TODO it should check if fields are matching, but that requires more work, will implement in the future
+			return false;
+		}
 		return true;
 	}
 
@@ -207,6 +210,8 @@ export class DefaultValidator implements Validator {
 				return 'Default value for type "array" is not correct';
 			case '"map"':
 				return 'Default value for type "map" is not correct, it has to have unique string keys and values matching values type';
+			case '"record"':
+				return 'Default value for type "record" has to be a JSON object';
 			default:
 				return 'Default value is not matching type';
 		}
