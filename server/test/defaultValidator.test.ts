@@ -75,7 +75,7 @@ describe('DefaultValidator', () => {
 		['-545656', 0],
 		['2147483648', 1],
 		['-2147483649', 1],
-		['2147483647354645', 1],
+		['2147483647354645', 1]
 	].forEach(([value, numberOfErrors]: [string, number]) => {
 		it('Type int can only have 32-bit signed integer number value: ' + value + ' number of errors ' + numberOfErrors, () => {
 			const node = validRecordWithField(
@@ -221,7 +221,7 @@ describe('DefaultValidator', () => {
 		['"\\u00FF\\uFFFF"', 1],
 		['"00FF"', 1],
 		['"1234"', 1],
-		['"\\u00FF2334"', 1],
+		['"\\u00FF2334"', 1]
 	].forEach(([value, numberOfErrors]: [string, number]) => {
 		it('Bytes type right formatting value ' + value + ' number of errors ' + numberOfErrors , () => {
 			const node = validRecordWithField(
@@ -257,12 +257,52 @@ describe('DefaultValidator', () => {
 		['"\\u00FF\\uFFFF"', 1],
 		['"00FF"', 1],
 		['"1234"', 1],
-		['"\\u00FF2334"', 1],
+		['"\\u00FF2334"', 1]
 	].forEach(([value, numberOfErrors]: [string, number]) => {
 		it('Fixed type right formatting value ' + value + ' number of errors ' + numberOfErrors , () => {
 			const node = validRecordWithField(
 				keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
 				keyValuePair(new StringToken('"default"', 40), null, new StringToken(value, 50), null)
+			);
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, numberOfErrors);
+		});
+	});
+
+	it('Enum type can only have default string', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"enum"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null, arrayNodeWithoutBrackets(), null),
+			keyValuePair(new StringToken('"default"', 60), null, new IntegerToken('11', 70), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			60,
+			72,
+			'Default value for type "enum" has to be a string from symbols array'));
+	});
+
+	[
+		['"ValueA"', 0],
+		['"OtherValue"', 0],
+		['"Something"', 0],
+		['"NotAvailable"', 1],
+		['"Wrong"', 1],
+		['"Missing Value"', 1]
+	].forEach(([value, numberOfErrors]: [string, number]) => {
+		it('Enum type correct default value ' + value + ' number of errors ' + numberOfErrors, () => {
+			const symbols = arrayNodeWithoutBrackets(
+				new StringToken('"ValueA"', 60),
+				new StringToken('"OtherValue"', 80),
+				new StringToken('"Something"', 100)
+			)
+
+			const node = validRecordWithField(
+				keyValuePair(new StringToken('"type"', 20), null, new StringToken('"enum"', 30), null),
+				keyValuePair(new StringToken('"symbols"', 40), null, symbols, null),
+				keyValuePair(new StringToken('"default"', 120), null, new StringToken(value, 140), null)
 			);
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);

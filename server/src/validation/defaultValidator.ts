@@ -1,5 +1,5 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator, ValidationSeverity } from './validators';
-import { Tree, ObjectNode, KeyValuePair } from '../syntaxTree';
+import { Tree, ObjectNode, KeyValuePair, ArrayNode } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
 import { StringToken, NullToken, BoolToken, IntegerToken, PrecisionNumberToken } from '../tokens';
 import { HighlightRange } from '../highlightsRange';
@@ -67,6 +67,12 @@ export class DefaultValidator implements Validator {
 					else if (typeToken.value === '"fixed"' && !this.isCorrectUnicodeDefault(defaultAttribute)) {
 						addErrorMessage(defaultAttribute, 'Default value for type "fixed" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048');
 					}
+					else if (typeToken.value === '"enum"') {
+						const symbolsAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"symbols"');
+						if (symbolsAttribute instanceof KeyValuePair && !this.isCorrectEnumDefault(defaultAttribute, symbolsAttribute)){
+							addErrorMessage(defaultAttribute, 'Default value for type "enum" has to be a string from symbols array');
+						}
+					}
 				}
 			}
 		}
@@ -74,5 +80,24 @@ export class DefaultValidator implements Validator {
 
 	private isCorrectUnicodeDefault(defaultAttribute: KeyValuePair): boolean {
 		return defaultAttribute.value instanceof StringToken && this.bytesDefaultRegex.test(defaultAttribute.value.value);
+	}
+
+	private isCorrectEnumDefault(defaultAttribute: KeyValuePair, symbols: KeyValuePair): boolean {
+		if (!(defaultAttribute.value instanceof StringToken)) {
+			return false;
+		}
+		const defaultText = defaultAttribute.value.value;
+		let isOnSymbols = false;
+		if (symbols.value instanceof ArrayNode) {
+			symbols.value.items.forEach(symbol => {
+				if (symbol.value instanceof StringToken) {
+				}
+				if (symbol.value instanceof StringToken && symbol.value.value === defaultText) {
+					isOnSymbols = true;
+					return;
+				}
+			});
+		}
+		return isOnSymbols;
 	}
 }
