@@ -232,4 +232,40 @@ describe('DefaultValidator', () => {
 			assert.equal(highlights.length, numberOfErrors);
 		});
 	});
+
+	it('Fixed type can only have default string', () => {
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"default"', 40), null, new IntegerToken('11', 50), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			52,
+			'Default value for type "fixed" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048'));
+	});
+
+	[
+		['""', 0],
+		['"\\u00FF"', 0],
+		['"\\u00FF\\u0000"', 0],
+		['"\\u00FF\\u0000\\u00AB"', 0],
+		['"\\u008A"', 0],
+		['"\\u000G"', 1],
+		['"\\u00FF\\uFFFF"', 1],
+		['"00FF"', 1],
+		['"1234"', 1],
+		['"\\u00FF2334"', 1],
+	].forEach(([value, numberOfErrors]: [string, number]) => {
+		it('Fixed type right formatting value ' + value + ' number of errors ' + numberOfErrors , () => {
+			const node = validRecordWithField(
+				keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+				keyValuePair(new StringToken('"default"', 40), null, new StringToken(value, 50), null)
+			);
+			const highlights = validator.validate(new Tree(node, []));
+			assert.equal(highlights.length, numberOfErrors);
+		});
+	});
 });

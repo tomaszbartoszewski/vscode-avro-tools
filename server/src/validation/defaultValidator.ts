@@ -24,7 +24,7 @@ export class DefaultValidator implements Validator {
 				range.getEndPosition(),
 				msg));
 		}
-		
+
 		if (isField) {
 			const typeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 			const defaultAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"default"');
@@ -61,15 +61,18 @@ export class DefaultValidator implements Validator {
 					else if (typeToken.value === '"string"' && !(defaultAttribute.value instanceof StringToken)) {
 						addErrorMessage(defaultAttribute, 'Default value for type "string" has to be a string');
 					}
-					else if (typeToken.value === '"bytes"' && !this.isCorrectBytesDefault(defaultAttribute)) {
+					else if (typeToken.value === '"bytes"' && !this.isCorrectUnicodeDefault(defaultAttribute)) {
 						addErrorMessage(defaultAttribute, 'Default value for type "bytes" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048');
+					}
+					else if (typeToken.value === '"fixed"' && !this.isCorrectUnicodeDefault(defaultAttribute)) {
+						addErrorMessage(defaultAttribute, 'Default value for type "fixed" has to be a string containing Unicode codes 0-255 in a format \\u00FF\\u0048');
 					}
 				}
 			}
 		}
 	}
 
-	private isCorrectBytesDefault(defaultAttribute: KeyValuePair): boolean {
+	private isCorrectUnicodeDefault(defaultAttribute: KeyValuePair): boolean {
 		return defaultAttribute.value instanceof StringToken && this.bytesDefaultRegex.test(defaultAttribute.value.value);
 	}
 }
