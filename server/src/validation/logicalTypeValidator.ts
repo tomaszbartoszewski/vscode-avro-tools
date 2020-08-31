@@ -75,6 +75,12 @@ export class LogicalTypeValidator implements Validator {
 							messageAggregator.addError(sizeAttribute ?? logicalTypeAttribute, 'Logical type "duration" requires size 12');
 					}
 				}
+				else if (logicalTypeName === '"decimal"') {
+					const precisionAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"precision"');
+					if (!(precisionAttribute instanceof KeyValuePair)) {
+						messageAggregator.addError(precisionAttribute ?? logicalTypeAttribute, 'Logical type "decimal" requires precision');
+					}
+				}
 			}
 		}
 	}

@@ -24,7 +24,8 @@ describe('LogicalTypeValidator', () => {
 	it('Validate type is matching logical type, check error for decimal', () => {
 		const node = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"string"', 30), null),
-			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null)
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('0', 90), null)
 		);
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 1);
@@ -76,7 +77,8 @@ describe('LogicalTypeValidator', () => {
 			const node = nodeWithoutBrackets(
 				keyValuePair(new StringToken('"type"', 20), null, new StringToken(type, 30), null),
 				keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken(logicalType, 60), null),
-				keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('12', 90), null) // to not fail duration size validation
+				keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('12', 90), null), // to not fail duration size validation
+				keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('0', 90), null) // to not fail decimal precision validation
 			);
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);
@@ -133,5 +135,19 @@ describe('LogicalTypeValidator', () => {
 		);
 		const highlights = validator.validate(new Tree(node, []));
 		assert.equal(highlights.length, 0);
+	});
+
+	it('Validate decimal has precision attribute', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			69,
+			'Logical type "decimal" requires precision'));
 	});
 });
