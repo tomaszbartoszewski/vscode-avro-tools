@@ -24,7 +24,7 @@
 	"repository": {
 		"keywords": {
 			"patterns": [{
-				"match": "(\")(name|aliases|order|type|fields|doc|symbols|items|default|namespace|logicalType|precision|scale|size)(\")",
+				"match": "(\")(name|aliases|order|type|fields|doc|symbols|items|values|default|namespace|logicalType|precision|scale|size)(\")",
 				"captures": {
 					"1": { "name": "string.quoted.avroavsc"},
 					"2": { "name": "keyword.struct.avroavsc"},
