@@ -10,8 +10,16 @@
         "vscode": "^1.48.0"
     },
     "categories": [
-        "Programming Languages"
+        "Programming Languages",
+        "Snippets"
     ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tomaszbartoszewski/vscode-avro-tools"
+    },
+        "bugs": {
+        "url": "https://github.com/tomaszbartoszewski/vscode-avro-tools/issues"
+    },
     "activationEvents": [
         "onLanguage:avroavsc"
     ],
@@ -59,7 +67,13 @@
                     "description": "Traces the communication between VS Code and the language server."
                 }
             }
-        }
+        },
+        "snippets": [
+			{
+				"language": "avroavsc",
+				"path": "./snippets/avsc.json"
+			}
+		]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

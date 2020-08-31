@@ -1,0 +1,145 @@
+{
+	"Record": {
+		"prefix": "Record",
+		"body": [
+			"{",
+			"    \"type\": \"record\",",
+			"    \"name\": \"$1\",",
+			"    \"fields\": [",
+			"        $2",
+			"    ]",
+			"}"
+		],
+		"description": "Snippet for a record definition"
+	},
+	"String": {
+		"prefix": "String",
+		"body": [
+			"{",
+			"    \"type\": \"string\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for a string definition"
+	},
+	"Boolean": {
+		"prefix": "Boolean",
+		"body": [
+			"{",
+			"    \"type\": \"boolean\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for a boolean definition"
+	},
+	"Int": {
+		"prefix": "Int",
+		"body": [
+			"{",
+			"    \"type\": \"int\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for an int definition"
+	},
+	"Long": {
+		"prefix": "Long",
+		"body": [
+			"{",
+			"    \"type\": \"long\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for a long definition"
+	},
+	"Float": {
+		"prefix": "Float",
+		"body": [
+			"{",
+			"    \"type\": \"float\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for a float definition"
+	},
+	"Double": {
+		"prefix": "Double",
+		"body": [
+			"{",
+			"    \"type\": \"double\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for a double definition"
+	},
+	"Bytes": {
+		"prefix": "Bytes",
+		"body": [
+			"{",
+			"    \"type\": \"bytes\",",
+			"    \"name\": \"$1\"",
+			"}$2"
+		],
+		"description": "Snippet for a bytes definition"
+	},
+	"Enum": {
+		"prefix": "Enum",
+		"body": [
+			"{",
+			"    \"type\": \"enum\",",
+			"    \"name\": \"$1\",",
+			"    \"symbols\": [",
+			"        \"$2\",",
+			"        \"$3\"",
+			"    ]",
+			"}$4"
+		],
+		"description": "Snippet for an enum definition"
+	},
+	"Array": {
+		"prefix": "Array",
+		"body": [
+			"{",
+			"    \"type\": \"array\",",
+			"    \"name\": \"$1\",",
+			"    \"items\": \"$2\"",
+			"}$3"
+		],
+		"description": "Snippet for an array definition"
+	},
+	"Map": {
+		"prefix": "Map",
+		"body": [
+			"{",
+			"    \"type\": \"map\",",
+			"    \"name\": \"$1\",",
+			"    \"values\": \"$2\"",
+			"}$3"
+		],
+		"description": "Snippet for a map definition"
+	},
+	"Fixed": {
+		"prefix": "Fixed",
+		"body": [
+			"{",
+			"    \"type\": \"fixed\",",
+			"    \"name\": \"$1\",",
+			"    \"size\": $2",
+			"}$3"
+		],
+		"description": "Snippet for a fixed definition"
+	},
+	"Union": {
+		"prefix": "Union",
+		"body": [
+			"{",
+			"    \"type\": [",
+			"        \"$1\",",
+			"        \"$2\"",
+			"    ],",
+			"    \"name\": \"$3\"",
+			"}$4"
+		],
+		"description": "Snippet for a union definition"
+	}
+}

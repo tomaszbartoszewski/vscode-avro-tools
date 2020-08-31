@@ -64,9 +64,10 @@ connection.onInitialize((params: InitializeParams) => {
     capabilities: {
       textDocumentSync: TextDocumentSyncKind.Incremental,
       // Tell the client that this server supports code completion.
-      completionProvider: {
-        resolveProvider: true
-      }
+      // completionProvider: {
+      //   resolveProvider: true
+      // },
+      // documentFormattingProvider: true
     }
   };
   if (hasWorkspaceFolderCapability) {
@@ -291,39 +292,41 @@ connection.onDidChangeWatchedFiles(_change => {
 
 connection.onCompletion(
   (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-    let _doc = documents.get(_textDocumentPosition.textDocument.uri)
-    let text = _doc?.getText()
-    let t = _doc?.getText(Range.create(Position.create(_textDocumentPosition.position.line, 0), _textDocumentPosition.position));
+    // let _doc = documents.get(_textDocumentPosition.textDocument.uri)
+    // let text = _doc?.getText()
+    // let t = _doc?.getText(Range.create(Position.create(_textDocumentPosition.position.line, 0), _textDocumentPosition.position));
 
     return [
-      {
-        label: 'String',
-        kind: CompletionItemKind.Class,
-        insertText: "{\n    \"type\": \"string\"\n}",
-        data: 1
-      },
-      {
-        label: 'Copy doc',
-        insertText: _doc?.getText()[0],
-        kind: CompletionItemKind.Text,
-        data: 2
-      }
+      // {
+      //   label: 'String',
+      //   kind: CompletionItemKind.Class,
+      //   insertText: "{\n    \"type\": \"string\"\n}",
+      //   data: 1
+      // },
+      // {
+      //   label: 'Copy doc',
+      //   insertText: _doc?.getText()[0],
+      //   kind: CompletionItemKind.Text,
+      //   data: 2
+      // }
     ];
   }
 );
 
 connection.onCompletionResolve(
   (item: CompletionItem): CompletionItem => {
-    if (item.data === 1) {
-      item.detail = 'String details';
-      item.documentation = 'String documentation';
-    } else if (item.data === 2) {
-      item.detail = 'Copy doc';
-      item.documentation = 'Copy doc documentation';
-    }
+    // if (item.data === 1) {
+    //   item.detail = 'String details';
+    //   item.documentation = 'String documentation';
+    // } else if (item.data === 2) {
+    //   item.detail = 'Copy doc';
+    //   item.documentation = 'Copy doc documentation';
+    // }
     return item;
   }
 );
+
+// connection.onDocumentFormatting()
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
