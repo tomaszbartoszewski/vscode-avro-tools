@@ -1,4 +1,5 @@
 import { Tree } from '../syntaxTree';
+import { HighlightRange } from '../highlightsRange';
 
 export enum ValidationSeverity {
 	Error,
@@ -24,6 +25,16 @@ export class ValidationMessageAggregator {
 
 	addMessage(message: ValidationMessage) {
 		this.messages.push(message);
+	}
+
+	addError(range: HighlightRange, msg: string) {
+		this.addMessage(
+			new ValidationMessage(
+				ValidationSeverity.Error,
+				range.getStartPosition(),
+				range.getEndPosition(),
+				msg)
+		);
 	}
 
 	getAll() {
