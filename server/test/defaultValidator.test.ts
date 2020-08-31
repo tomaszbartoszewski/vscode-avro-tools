@@ -542,4 +542,82 @@ describe('DefaultValidator', () => {
 			74,
 			'Default value for union type has to match first type from the union'));
 	});
+
+	it('Union type first type is enum', () => {
+		const symbols = arrayNodeWithoutBrackets(
+			new StringToken('"ValueA"', 60),
+			new StringToken('"OtherValue"', 80),
+			new StringToken('"Something"', 100)
+		)
+
+		const types = arrayNodeWithoutBrackets(
+			nodeWithoutBrackets(
+				keyValuePair(new StringToken('"type"', 30), null, new StringToken('"enum"', 40), null),
+				keyValuePair(new StringToken('"symbols"', 40), null, symbols, null)
+			),
+			new StringToken('"null"', 50)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, types, null),
+			keyValuePair(new StringToken('"default"', 120), null, new NullToken('null', 130), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			120,
+			134,
+			'Default value for union type has to match first type from the union'));
+	});
+
+	it('Enum type default inside inline type', () => {
+		const symbols = arrayNodeWithoutBrackets(
+			new StringToken('"ValueA"', 60),
+			new StringToken('"OtherValue"', 80),
+			new StringToken('"Something"', 100)
+		)
+
+		const type = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"enum"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null, symbols, null),
+			keyValuePair(new StringToken('"default"', 120), null, new StringToken('"Wrong"', 130), null)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, type, null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			120,
+			137,
+			'Default value for type "enum" has to be a string from symbols array'));
+	});
+
+	it('Enum type default outside inline type', () => {
+		const symbols = arrayNodeWithoutBrackets(
+			new StringToken('"ValueA"', 60),
+			new StringToken('"OtherValue"', 80),
+			new StringToken('"Something"', 100)
+		)
+
+		const type = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"enum"', 30), null),
+			keyValuePair(new StringToken('"symbols"', 40), null, symbols, null)
+		);
+
+		const node = validRecordWithField(
+			keyValuePair(new StringToken('"type"', 20), null, type, null),
+			keyValuePair(new StringToken('"default"', 120), null, new StringToken('"Wrong"', 130), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			120,
+			137,
+			'Default value for type "enum" has to be a string from symbols array'));
+	});
 });

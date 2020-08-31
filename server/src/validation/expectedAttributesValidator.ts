@@ -15,7 +15,7 @@ export class ExpectedAttributesValidator implements Validator {
 
 	validate(tree: Tree): ValidationMessage[] {
 		const messageAggregator = new ValidationMessageAggregator();
-		const walker = new CorrectSchemaWalker((node, isField) => {
+		const walker = new CorrectSchemaWalker((node, isField, _) => {
 			this.validateNode(node, messageAggregator, isField);
 		});
 		walker.walkTree(tree);

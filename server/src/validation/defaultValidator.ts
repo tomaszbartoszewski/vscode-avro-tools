@@ -9,14 +9,14 @@ export class DefaultValidator implements Validator {
 
 	validate(tree: Tree): ValidationMessage[] {
 		const messageAggregator = new ValidationMessageAggregator();
-		const walker = new CorrectSchemaWalker((node, isField) => {
-			this.validateNode(node, messageAggregator, isField);
+		const walker = new CorrectSchemaWalker((node, isField, isNestedType) => {
+			this.validateNode(node, messageAggregator, isField, isNestedType);
 		});
 		walker.walkTree(tree);
 		return messageAggregator.getAll();
 	}
 
-	private validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean) {
+	private validateNode(node: ObjectNode, messageAggregator: ValidationMessageAggregator, isField: boolean, isNestedType: boolean) {
 		const addErrorMessage = function (range: HighlightRange, msg: string) {
 			messageAggregator.addMessage(new ValidationMessage(
 				ValidationSeverity.Error,
@@ -25,7 +25,7 @@ export class DefaultValidator implements Validator {
 				msg));
 		}
 
-		if (isField) {
+		if (isField || isNestedType) { // TODO if it's top node with nested type can it have default?
 			const typeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 			const defaultAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"default"');
 			if (defaultAttribute instanceof KeyValuePair) {
@@ -122,7 +122,7 @@ export class DefaultValidator implements Validator {
 		else if (typeToken instanceof ObjectNode) {
 			const typeAttribute = typeToken.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 			if (typeAttribute instanceof KeyValuePair) {
-				return this.isValidDefaultForType(typeAttribute.value, defaultAttribute, node);
+				return this.isValidDefaultForType(typeAttribute.value, defaultAttribute, typeToken);
 			}
 		}
 		return true;
@@ -228,6 +228,12 @@ export class DefaultValidator implements Validator {
 		}
 		else if (typeToken instanceof ArrayNode) {
 			return 'Default value for union type has to match first type from the union';
+		}
+		else if (typeToken instanceof ObjectNode) {
+			const typeAttribute = typeToken.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
+			if (typeAttribute instanceof KeyValuePair) {
+				return this.getErrorMessageForType(typeAttribute.value);
+			}
 		}
 		return 'Default value is not matching type';
 	}
