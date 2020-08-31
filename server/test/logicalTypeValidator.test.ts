@@ -78,7 +78,7 @@ describe('LogicalTypeValidator', () => {
 				keyValuePair(new StringToken('"type"', 20), null, new StringToken(type, 30), null),
 				keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken(logicalType, 60), null),
 				keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('12', 90), null), // to not fail duration size validation
-				keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('0', 90), null) // to not fail decimal precision validation
+				keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('5', 90), null) // to not fail decimal precision validation
 			);
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);
@@ -137,7 +137,21 @@ describe('LogicalTypeValidator', () => {
 		assert.equal(highlights.length, 0);
 	});
 
-	it('Validate decimal has precision attribute', () => {
+	it('Validate decimal for type bytes has precision attribute', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"bytes"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			69,
+			'Logical type "decimal" requires "precision" greater than 0'));
+	});
+
+	it('Validate decimal for type fixed has size attribute', () => {
 		const node = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
 			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null)
@@ -148,6 +162,36 @@ describe('LogicalTypeValidator', () => {
 			ValidationSeverity.Error,
 			40,
 			69,
-			'Logical type "decimal" requires precision'));
+			'Logical type "decimal" requires "size" greater than 0'));
+	});
+
+	it('Validate decimal for type fixed has size attribute greater than 0', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('0', 90), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			80,
+			91,
+			'Logical type "decimal" requires "size" greater than 0'));
+	});
+
+	it('Validate decimal for type bytes has precision attribute greater than 0', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"bytes"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('0', 95), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			80,
+			96,
+			'Logical type "decimal" requires "precision" greater than 0'));
 	});
 });

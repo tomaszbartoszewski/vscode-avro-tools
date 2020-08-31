@@ -3,6 +3,7 @@ import { Tree, ObjectNode, KeyValuePair } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
 import { StringToken, IntegerToken } from '../tokens';
 import { stringify } from 'querystring';
+import { HighlightRange } from '../highlightsRange';
 
 export class LogicalTypeValidator implements Validator {
 	private typeForLogicalType: Map<string, string[]> = new Map([
@@ -76,11 +77,60 @@ export class LogicalTypeValidator implements Validator {
 					}
 				}
 				else if (logicalTypeName === '"decimal"') {
-					const precisionAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"precision"');
-					if (!(precisionAttribute instanceof KeyValuePair)) {
-						messageAggregator.addError(precisionAttribute ?? logicalTypeAttribute, 'Logical type "decimal" requires precision');
+					const typeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
+					if (typeAttribute instanceof KeyValuePair) {
+						if (typeAttribute.value instanceof StringToken) {
+							if (typeAttribute.value.value === '"fixed"') {
+								this.validateDecimal(node, logicalTypeAttribute, '"size"', messageAggregator);
+							}
+							else if (typeAttribute.value.value === '"bytes"') {
+								this.validateDecimal(node, logicalTypeAttribute, '"precision"', messageAggregator);
+							}
+						}
 					}
+
+					
 				}
+			}
+		}
+	}
+
+	// private validateDecimalFixed(node: ObjectNode, range: HighlightRange, messageAggregator: ValidationMessageAggregator) {
+	// 	const sizeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"size"');
+	// 	if (!(sizeAttribute instanceof KeyValuePair) || !(sizeAttribute.value instanceof IntegerToken)) {
+	// 		messageAggregator.addError(sizeAttribute ?? range, 'Logical type "decimal" requires size');
+	// 		return;
+	// 	}
+	// 	else {
+
+	// 	}
+	// }
+
+	// private validateDecimalBytes(node: ObjectNode, range: HighlightRange, messageAggregator: ValidationMessageAggregator) {
+	// 	const precisionAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"precision"');
+	// 	if (!(precisionAttribute instanceof KeyValuePair) || !(precisionAttribute.value instanceof IntegerToken)) {
+	// 		messageAggregator.addError(precisionAttribute ?? range, 'Logical type "decimal" requires precision');
+	// 		return;
+	// 	}
+	// 	else {
+
+	// 	}
+	// }
+
+	private validateDecimal(node: ObjectNode, logicalTypeAttribute: HighlightRange, precisionName: string, messageAggregator: ValidationMessageAggregator) {
+		const precisionAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === precisionName);
+		const addPrecisionError = function () {
+			messageAggregator.addError(precisionAttribute ?? logicalTypeAttribute, 'Logical type "decimal" requires ' + precisionName + ' greater than 0');
+		}
+		
+		if (!(precisionAttribute instanceof KeyValuePair) || !(precisionAttribute.value instanceof IntegerToken)) {
+			addPrecisionError();
+			return;
+		}
+		else {
+			const precision = Number(precisionAttribute.value.value);
+			if (precision <= 0) {
+				addPrecisionError();
 			}
 		}
 	}
