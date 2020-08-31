@@ -1,7 +1,7 @@
 import { Validator, ValidationMessage, ValidationMessageAggregator } from './validators';
 import { Tree, ObjectNode, KeyValuePair } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
-import { StringToken } from '../tokens';
+import { StringToken, IntegerToken } from '../tokens';
 import { stringify } from 'querystring';
 
 export class LogicalTypeValidator implements Validator {
@@ -57,6 +57,24 @@ export class LogicalTypeValidator implements Validator {
 			}
 			else {
 				messageAggregator.addError(logicalTypeAttribute, 'Logical type ' + logicalTypeName + ' is unknown');
+			}
+		}
+		this.validateAdditionalAttributes(node, messageAggregator);
+	}
+
+	private validateAdditionalAttributes(node: ObjectNode, messageAggregator: ValidationMessageAggregator) {
+		const logicalTypeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"logicalType"');
+		if (logicalTypeAttribute instanceof KeyValuePair) {
+			if (logicalTypeAttribute.value instanceof StringToken) {
+				const logicalTypeName = logicalTypeAttribute.value.value;
+				if (logicalTypeName === '"duration"') {
+					const sizeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"size"');
+					if (!(sizeAttribute instanceof KeyValuePair)
+						|| !(sizeAttribute.value instanceof IntegerToken)
+						|| sizeAttribute.value.value !== '12') {
+							messageAggregator.addError(sizeAttribute ?? logicalTypeAttribute, 'Logical type "duration" requires size 12');
+					}
+				}
 			}
 		}
 	}

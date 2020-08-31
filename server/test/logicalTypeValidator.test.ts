@@ -75,7 +75,8 @@ describe('LogicalTypeValidator', () => {
 		it('Logical type ' + logicalType + ' is matching type ' + type + ' number of errors ' + numberOfErrors, () => {
 			const node = nodeWithoutBrackets(
 				keyValuePair(new StringToken('"type"', 20), null, new StringToken(type, 30), null),
-				keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken(logicalType, 60), null)
+				keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken(logicalType, 60), null),
+				keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('12', 90), null) // to not fail duration size validation
 			);
 			const highlights = validator.validate(new Tree(node, []));
 			assert.equal(highlights.length, numberOfErrors);
@@ -93,5 +94,44 @@ describe('LogicalTypeValidator', () => {
 			10,
 			37,
 			'Logical type "wrong" is unknown'));
+	});
+
+	it('Validate duration has size attribute', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"duration"', 60), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			70,
+			'Logical type "duration" requires size 12'));
+	});
+
+	it('Validate duration has size set to 12', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"duration"', 60), null),
+			keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('11', 90), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			80,
+			92,
+			'Logical type "duration" requires size 12'));
+	});
+
+	it('Validate duration with correct size set to 12', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"duration"', 60), null),
+			keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('12', 90), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 0);
 	});
 });
