@@ -2,7 +2,6 @@ import { Validator, ValidationMessage, ValidationMessageAggregator } from './val
 import { Tree, ObjectNode, KeyValuePair } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
 import { StringToken, IntegerToken } from '../tokens';
-import { stringify } from 'querystring';
 import { HighlightRange } from '../highlightsRange';
 
 export class LogicalTypeValidator implements Validator {
@@ -88,34 +87,10 @@ export class LogicalTypeValidator implements Validator {
 							}
 						}
 					}
-
-					
 				}
 			}
 		}
 	}
-
-	// private validateDecimalFixed(node: ObjectNode, range: HighlightRange, messageAggregator: ValidationMessageAggregator) {
-	// 	const sizeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"size"');
-	// 	if (!(sizeAttribute instanceof KeyValuePair) || !(sizeAttribute.value instanceof IntegerToken)) {
-	// 		messageAggregator.addError(sizeAttribute ?? range, 'Logical type "decimal" requires size');
-	// 		return;
-	// 	}
-	// 	else {
-
-	// 	}
-	// }
-
-	// private validateDecimalBytes(node: ObjectNode, range: HighlightRange, messageAggregator: ValidationMessageAggregator) {
-	// 	const precisionAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"precision"');
-	// 	if (!(precisionAttribute instanceof KeyValuePair) || !(precisionAttribute.value instanceof IntegerToken)) {
-	// 		messageAggregator.addError(precisionAttribute ?? range, 'Logical type "decimal" requires precision');
-	// 		return;
-	// 	}
-	// 	else {
-
-	// 	}
-	// }
 
 	private validateDecimal(node: ObjectNode, logicalTypeAttribute: HighlightRange, precisionName: string, messageAggregator: ValidationMessageAggregator) {
 		const precisionAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === precisionName);
@@ -127,10 +102,29 @@ export class LogicalTypeValidator implements Validator {
 			addPrecisionError();
 			return;
 		}
-		else {
-			const precision = Number(precisionAttribute.value.value);
-			if (precision <= 0) {
-				addPrecisionError();
+
+		const precision = Number(precisionAttribute.value.value);
+		if (precision <= 0) {
+			addPrecisionError();
+			return;
+		}
+
+
+		const scaleAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"scale"');
+		const addScaleError = function () {
+			messageAggregator.addError(scaleAttribute ?? logicalTypeAttribute, 'Logical type "decimal" requires "scale" greater than 0 and lower or equal to ' + precisionName);
+		}
+
+		if (scaleAttribute instanceof KeyValuePair) {
+			if (!(scaleAttribute.value instanceof IntegerToken)) {
+				addScaleError();
+				return;
+			}
+			const scale = Number(scaleAttribute.value.value);
+
+			if (scale > precision || scale < 0) {
+				addScaleError();
+				return;
 			}
 		}
 	}

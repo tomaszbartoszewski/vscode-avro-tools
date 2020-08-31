@@ -28,6 +28,7 @@ import { AttributeDuplicatesValidator } from './validation/attributeDuplicatesVa
 import { NamesAndSymbolsValidator } from './validation/namesAndSymbolsValidator';
 import { ValueTypesValidator } from './validation/valueTypesValidator';
 import { DefaultValidator } from './validation/defaultValidator';
+import { LogicalTypeValidator } from './validation/logicalTypeValidator';
 
 // import {  } from 'vscode';
 
@@ -169,7 +170,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     new ExpectedAttributesValidator(),
     new NamesAndSymbolsValidator(),
     new ValueTypesValidator(),
-    new DefaultValidator()
+    new DefaultValidator(),
+    new LogicalTypeValidator()
   ];
 
   console.time('validate');

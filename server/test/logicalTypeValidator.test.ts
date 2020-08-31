@@ -194,4 +194,68 @@ describe('LogicalTypeValidator', () => {
 			96,
 			'Logical type "decimal" requires "precision" greater than 0'));
 	});
+
+	it('Validate decimal for type fixed has scale attribute greater than size returns error', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"fixed"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"size"', 80), null, new IntegerToken('4', 90), null),
+			keyValuePair(new StringToken('"scale"', 100), null, new IntegerToken('5', 110), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			100,
+			111,
+			'Logical type "decimal" requires "scale" greater than 0 and lower or equal to "size"'));
+	});
+
+	it('Validate decimal for type bytes has scale attribute greater than precision returns error', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"bytes"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('4', 95), null),
+			keyValuePair(new StringToken('"scale"', 100), null, new IntegerToken('5', 110), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			100,
+			111,
+			'Logical type "decimal" requires "scale" greater than 0 and lower or equal to "precision"'));
+	});
+
+	it('Validate decimal for type bytes has scale attribute not an integer returns error', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"bytes"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('4', 95), null),
+			keyValuePair(new StringToken('"scale"', 100), null, new StringToken('"wrong"', 110), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			100,
+			117,
+			'Logical type "decimal" requires "scale" greater than 0 and lower or equal to "precision"'));
+	});
+
+	it('Validate decimal for type bytes has scale attribute a negative integer returns error', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"bytes"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null),
+			keyValuePair(new StringToken('"precision"', 80), null, new IntegerToken('4', 95), null),
+			keyValuePair(new StringToken('"scale"', 100), null, new IntegerToken('-1', 110), null),
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			100,
+			112,
+			'Logical type "decimal" requires "scale" greater than 0 and lower or equal to "precision"'));
+	});
 });
