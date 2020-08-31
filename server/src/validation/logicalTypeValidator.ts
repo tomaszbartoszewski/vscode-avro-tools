@@ -2,19 +2,20 @@ import { Validator, ValidationMessage, ValidationMessageAggregator } from './val
 import { Tree, ObjectNode, KeyValuePair } from '../syntaxTree';
 import { CorrectSchemaWalker } from './correctSchemaWalker';
 import { StringToken } from '../tokens';
+import { stringify } from 'querystring';
 
 export class LogicalTypeValidator implements Validator {
-	private typeForLogicalType: Map<string, string> = new Map([
-		['"decimal"', '"bytes"'],
-		['"uuid"', '"string"'],
-		['"date"', '"int"'],
-		['"time-millis"', '"int"'],
-		['"time-micros"', '"long"'],
-		['"timestamp-millis"', '"long"'],
-		['"timestamp-micros"', '"long"'],
-		['"local-timestamp-millis"', '"long"'],
-		['"local-timestamp-micros"', '"long"'],
-		['"duration"', '"fixed"']
+	private typeForLogicalType: Map<string, string[]> = new Map([
+		['"decimal"', ['"bytes"', '"fixed"']],
+		['"uuid"', ['"string"']],
+		['"date"', ['"int"']],
+		['"time-millis"', ['"int"']],
+		['"time-micros"', ['"long"']],
+		['"timestamp-millis"', ['"long"']],
+		['"timestamp-micros"', ['"long"']],
+		['"local-timestamp-millis"', ['"long"']],
+		['"local-timestamp-micros"', ['"long"']],
+		['"duration"', ['"fixed"']]
 	]);
 
 	validate(tree: Tree): ValidationMessage[] {
@@ -39,8 +40,18 @@ export class LogicalTypeValidator implements Validator {
 			if (expectedType !== undefined) {
 				const typeAttribute = node.attributes.find(kv => kv.key !== null && kv.key.value === '"type"');
 				if (typeAttribute instanceof KeyValuePair) {
-					if (!(typeAttribute.value instanceof StringToken) || typeAttribute.value.value !== expectedType) {
-						messageAggregator.addError(logicalTypeAttribute, 'Logical type ' + logicalTypeName + ' requires type ' + expectedType);
+					let isValid = false;
+					if (typeAttribute.value instanceof StringToken) {
+						const typeName = typeAttribute.value.value;
+						expectedType.forEach(t => {
+							if (typeName === t) {
+								isValid = true;
+								return;
+							}
+						})
+					}
+					if (!isValid) {
+						messageAggregator.addError(logicalTypeAttribute, 'Logical type ' + logicalTypeName + ' requires type ' + expectedType.join(' or '));
 					}
 				}
 			}

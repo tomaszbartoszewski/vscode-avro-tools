@@ -21,7 +21,7 @@ describe('LogicalTypeValidator', () => {
 			'Logical type attribute has to be a string'));
 	});
 
-	it('Validate type is matching logical type, check error', () => {
+	it('Validate type is matching logical type, check error for decimal', () => {
 		const node = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"string"', 30), null),
 			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"decimal"', 60), null)
@@ -32,12 +32,27 @@ describe('LogicalTypeValidator', () => {
 			ValidationSeverity.Error,
 			40,
 			69,
-			'Logical type "decimal" requires type "bytes"'));
+			'Logical type "decimal" requires type "bytes" or "fixed"'));
+	});
+
+	it('Validate type is matching logical type, check error for date', () => {
+		const node = nodeWithoutBrackets(
+			keyValuePair(new StringToken('"type"', 20), null, new StringToken('"string"', 30), null),
+			keyValuePair(new StringToken('"logicalType"', 40), null, new StringToken('"date"', 60), null)
+		);
+		const highlights = validator.validate(new Tree(node, []));
+		assert.equal(highlights.length, 1);
+		assert.deepEqual(highlights[0], new ValidationMessage(
+			ValidationSeverity.Error,
+			40,
+			66,
+			'Logical type "date" requires type "int"'));
 	});
 
 	[
 		['"decimal"', '"int"', 1],
 		['"decimal"', '"bytes"', 0],
+		['"decimal"', '"fixed"', 0],
 		['"uuid"', '"boolean"', 1],
 		['"uuid"', '"string"', 0],
 		['"date"', '"boolean"', 1],
