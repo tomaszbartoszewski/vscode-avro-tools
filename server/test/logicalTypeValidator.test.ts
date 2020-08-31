@@ -85,17 +85,12 @@ describe('LogicalTypeValidator', () => {
 		});
 	});
 
-	it('Logical type unknown', () => {
+	it('Logical type unknown, can be defined by user', () => {
 		const node = nodeWithoutBrackets(
 			keyValuePair(new StringToken('"logicalType"', 10), null, new StringToken('"wrong"', 30), null)
 		);
 		const highlights = validator.validate(new Tree(node, []));
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], new ValidationMessage(
-			ValidationSeverity.Error,
-			10,
-			37,
-			'Logical type "wrong" is unknown'));
+		assert.equal(highlights.length, 0);
 	});
 
 	it('Validate duration has size attribute', () => {

@@ -55,9 +55,6 @@ export class LogicalTypeValidator implements Validator {
 					}
 				}
 			}
-			else {
-				messageAggregator.addError(logicalTypeAttribute, 'Logical type ' + logicalTypeName + ' is unknown');
-			}
 		}
 		this.validateAdditionalAttributes(node, messageAggregator);
 	}
