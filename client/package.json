@@ -1,14 +1,14 @@
 {
 	"name": "avro-tools",
 	"displayName": "Avro Tools",
-	"description": "Avro tooling",
+	"description": "Avro tooling supporting schema definition in avsc files",
 	"version": "0.0.1",
 	"author": "Tomasz Bartoszewski",
 	"license": "MIT",
 	"publisher": "tomaszbartoszewski",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/tomaszbartoszewski/"
+		"url": "https://github.com/tomaszbartoszewski/vscode-avro-tools"
 	},
 	"engines": {
 		"vscode": "^1.48.0"
