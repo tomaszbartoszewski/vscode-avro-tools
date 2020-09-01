@@ -12,7 +12,9 @@ import {
   TextDocumentSyncKind,
   InitializeResult,
   Position, 
-  Range
+  Range,
+  DocumentFormattingParams,
+  TextEdit
 } from 'vscode-languageserver';
 
 import {
@@ -67,7 +69,7 @@ connection.onInitialize((params: InitializeParams) => {
       // completionProvider: {
       //   resolveProvider: true
       // },
-      // documentFormattingProvider: true
+      documentFormattingProvider: true
     }
   };
   if (hasWorkspaceFolderCapability) {
@@ -326,7 +328,54 @@ connection.onCompletionResolve(
   }
 );
 
-// connection.onDocumentFormatting()
+connection.onDocumentFormatting(({
+  textDocument,
+  options
+}: DocumentFormattingParams): TextEdit[] => {
+  let _doc = documents.get(textDocument.uri);
+  if (_doc !== undefined) {
+    const text = _doc.getText();
+    return [
+            TextEdit.replace(
+              Range.create(_doc.positionAt(0), _doc.positionAt(text.length)),
+              'TB formatting!!! ' + text
+            )
+          ];
+  }
+
+  return [];
+});
+
+// public onDocumentFormatting = ({
+//   textDocument,
+//   options
+// }: DocumentFormattingParams): TextEdit[] => {
+//   // const doc = this.documents.get(textDocument.uri)!;
+//   // const { fsPath } = URI.parse(textDocument.uri);
+
+//   // try {
+//   //   const text = doc.getText();
+//   //   const markoCompiler = loadMarkoFile(fsPath, "compiler");
+//   //   const CodeWriter = loadMarkoFile(fsPath, "compiler/CodeWriter");
+//   //   const formatted = prettyPrint(text, {
+//   //     markoCompiler,
+//   //     CodeWriter,
+//   //     filename: fsPath,
+//   //     indent: (options.insertSpaces ? " " : "\t").repeat(options.tabSize)
+//   //   });
+
+//   //   return [
+//   //     TextEdit.replace(
+//   //       Range.create(doc.positionAt(0), doc.positionAt(text.length)),
+//   //       formatted
+//   //     )
+//   //   ];
+//   // } catch (e) {
+//   //   this.displayMessage("error", 'Formatting failed: "' + e.message + '"');
+//   // }
+
+//   return [];
+// };
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
