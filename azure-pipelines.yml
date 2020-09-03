@@ -48,6 +48,6 @@ steps:
     echo ">>> Publish"
     npm run deploy
   displayName: Publish
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), eq(variables['Agent.OS'], 'MacOS'))
   env:
     VSCE_PAT: $(VSCE_PAT)
