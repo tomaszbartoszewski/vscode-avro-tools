@@ -11,7 +11,7 @@ import {
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
-  Position, 
+  Position,
   Range,
   DocumentFormattingParams,
   TextEdit
@@ -20,8 +20,8 @@ import {
 import {
   TextDocument
 } from 'vscode-languageserver-textdocument';
-import {tokenize} from './parsing';
-import {FreeTextToken} from './tokens';
+import { tokenize } from './parsing';
+import { FreeTextToken } from './tokens';
 import buildTree from './buildSyntaxTree';
 import { Validator, ValidationSeverity, ValidationMessage } from './validation/validators';
 import { ExpectedAttributesValidator } from './validation/expectedAttributesValidator';
@@ -31,6 +31,7 @@ import { NamesAndSymbolsValidator } from './validation/namesAndSymbolsValidator'
 import { ValueTypesValidator } from './validation/valueTypesValidator';
 import { DefaultValidator } from './validation/defaultValidator';
 import { LogicalTypeValidator } from './validation/logicalTypeValidator';
+import { AVSCFormatter } from './formatting/avscFormatter';
 
 // import {  } from 'vscode';
 
@@ -44,6 +45,8 @@ let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
+
+let formatter = new AVSCFormatter();
 
 connection.onInitialize((params: InitializeParams) => {
   let capabilities = params.capabilities;
@@ -193,7 +196,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
         end: textDocument.positionAt(value.end)
       },
       message: value.message,
-      source: 'ex'
+      source: 'avro-tools'
     };
     diagnostics.push(diagnostic);
   });
@@ -214,7 +217,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   // }
   // assert.equal(curr.done, false);
 
-  tokens.forEach(function(tokenInfo) {
+  tokens.forEach(function (tokenInfo) {
     if (tokenInfo instanceof FreeTextToken) {
       problems++;
       let diagnostic: Diagnostic = {
@@ -223,8 +226,8 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
           start: textDocument.positionAt(tokenInfo.position),
           end: textDocument.positionAt(tokenInfo.position + tokenInfo.length)
         },
-        message: `Wrong`,
-        source: 'ex'
+        message: `Unrecognized value`,
+        source: 'avro-tools'
       };
       diagnostics.push(diagnostic);
     }
@@ -247,7 +250,7 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   //   }
 
   // } catch(e) {
-    
+
   // }
 
   // while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
@@ -335,47 +338,17 @@ connection.onDocumentFormatting(({
   let _doc = documents.get(textDocument.uri);
   if (_doc !== undefined) {
     const text = _doc.getText();
+
     return [
-            TextEdit.replace(
-              Range.create(_doc.positionAt(0), _doc.positionAt(text.length)),
-              'TB formatting!!! ' + text
-            )
-          ];
+      TextEdit.replace(
+        Range.create(_doc.positionAt(0), _doc.positionAt(text.length)),
+        formatter.format(text)
+      )
+    ];
   }
 
   return [];
 });
-
-// public onDocumentFormatting = ({
-//   textDocument,
-//   options
-// }: DocumentFormattingParams): TextEdit[] => {
-//   // const doc = this.documents.get(textDocument.uri)!;
-//   // const { fsPath } = URI.parse(textDocument.uri);
-
-//   // try {
-//   //   const text = doc.getText();
-//   //   const markoCompiler = loadMarkoFile(fsPath, "compiler");
-//   //   const CodeWriter = loadMarkoFile(fsPath, "compiler/CodeWriter");
-//   //   const formatted = prettyPrint(text, {
-//   //     markoCompiler,
-//   //     CodeWriter,
-//   //     filename: fsPath,
-//   //     indent: (options.insertSpaces ? " " : "\t").repeat(options.tabSize)
-//   //   });
-
-//   //   return [
-//   //     TextEdit.replace(
-//   //       Range.create(doc.positionAt(0), doc.positionAt(text.length)),
-//   //       formatted
-//   //     )
-//   //   ];
-//   // } catch (e) {
-//   //   this.displayMessage("error", 'Formatting failed: "' + e.message + '"');
-//   // }
-
-//   return [];
-// };
 
 // Make the text document manager listen on the connection
 // for open, change and close text document events
