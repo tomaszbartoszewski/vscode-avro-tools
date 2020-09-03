@@ -1,5 +1,10 @@
 trigger:
-- '*'
+  branches:
+    include:
+    - main
+  tags:
+    include:
+    - refs/tags/v*
 pr:
 - '*'
 
@@ -38,3 +43,11 @@ steps:
   displayName: Run Tests
   env:
     DISPLAY: ':99.0'
+
+- bash: |
+    echo ">>> Publish"
+    npm run deploy
+  displayName: Publish
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  env:
+    VSCE_PAT: $(VSCE_PAT)
