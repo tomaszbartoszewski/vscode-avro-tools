@@ -2,7 +2,7 @@
     "name": "avro-tools",
     "displayName": "Avro Tools",
     "description": "Avro tooling supporting schema definition in avsc files",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "author": "Tomasz Bartoszewski",
     "license": "MIT",
     "publisher": "tomaszbartoszewski",
@@ -60,7 +60,7 @@
         "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
         "test": "sh ./scripts/e2e.sh",
         "unittest": "mocha -r ts-node/register server/test/**/*.test.ts",
-        "deploy": "vsce publish"
+        "deploy": "vsce publish --githubBranch main"
     },
     "devDependencies": {
         "@types/vscode": "^1.48.0",
