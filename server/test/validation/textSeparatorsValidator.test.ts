@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { Tree, ObjectNode, ArrayNode } from '../src/syntaxTree';
-import { LeftBracketToken, StringToken, RightBracketToken, ColonToken, LeftSquareBracketToken, RightSquareBracketToken, CommaToken } from '../src/tokens';
-import { TextSeparatorsValidator } from '../src/validation/textSeparatorsValidator'
-import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
-import { objectNode, keyValuePair, arrayNode, arrayItem, validObjectNodeWithType } from './syntaxTreeUtils';
+import { Tree, ObjectNode, ArrayNode } from '../../src/syntaxTree';
+import { LeftBracketToken, StringToken, RightBracketToken, ColonToken, LeftSquareBracketToken, RightSquareBracketToken, CommaToken } from '../../src/tokens';
+import { TextSeparatorsValidator } from '../../src/validation/textSeparatorsValidator'
+import { ValidationMessage, ValidationSeverity } from '../../src/validation/validators';
+import { objectNode, keyValuePair, arrayNode, arrayItem, validObjectNodeWithType } from '../syntaxTreeUtils';
 
 describe('TextSeparatorsValidator', () => {
 	const validator = new TextSeparatorsValidator();

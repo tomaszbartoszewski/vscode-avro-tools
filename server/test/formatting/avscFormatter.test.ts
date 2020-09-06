@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { AVSCFormatter } from '../src/formatting/avscFormatter'
+import { AVSCFormatter } from '../../src/formatting/avscFormatter'
 
 describe('AVSCFormatter', () => {
 	const formatter = new AVSCFormatter();

@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { Tree, KeyValuePair, ObjectNode } from '../src/syntaxTree';
-import { ValidationMessage, ValidationSeverity } from '../src/validation/validators'
-import { DefaultValidator } from '../src/validation/defaultValidator'
-import { StringToken, Token, IntegerToken, NullToken, BoolToken, PrecisionNumberToken } from '../src/tokens';
-import { keyValuePair, arrayNodeWithoutBrackets, validRecordWithField, nodeWithoutBrackets } from './syntaxTreeUtils';
+import { Tree, KeyValuePair, ObjectNode } from '../../src/syntaxTree';
+import { ValidationMessage, ValidationSeverity } from '../../src/validation/validators'
+import { DefaultValidator } from '../../src/validation/defaultValidator'
+import { StringToken, Token, IntegerToken, NullToken, BoolToken, PrecisionNumberToken } from '../../src/tokens';
+import { keyValuePair, arrayNodeWithoutBrackets, validRecordWithField, nodeWithoutBrackets } from '../syntaxTreeUtils';
 
 describe('DefaultValidator', () => {
 	const validator = new DefaultValidator();

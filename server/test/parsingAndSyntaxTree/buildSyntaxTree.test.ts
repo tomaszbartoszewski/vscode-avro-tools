@@ -1,7 +1,7 @@
 import * as assert from 'assert';
-import {ArrayNode, ArrayItem, ObjectNode} from '../src/syntaxTree';
-import {buildTree} from '../src/buildSyntaxTree';
-import { Token, LeftBracketToken, RightBracketToken, ColonToken, StringToken, IntegerToken, PrecisionNumberToken, BoolToken, NullToken, CommaToken, LeftSquareBracketToken, RightSquareBracketToken, FreeTextToken } from '../src/tokens';
+import {ArrayNode, ArrayItem, ObjectNode} from '../../src/syntaxTree';
+import {buildTree} from '../../src/buildSyntaxTree';
+import { Token, LeftBracketToken, RightBracketToken, ColonToken, StringToken, IntegerToken, PrecisionNumberToken, BoolToken, NullToken, CommaToken, LeftSquareBracketToken, RightSquareBracketToken, FreeTextToken } from '../../src/tokens';
 
 class TokenContainer {
 	tokens: Token[];

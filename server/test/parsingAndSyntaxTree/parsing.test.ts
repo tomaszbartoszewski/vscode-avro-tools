@@ -1,6 +1,6 @@
 import * as assert from 'assert';
-import { tokenize } from '../src/parsing';
-import { LeftBracketToken, RightBracketToken, LeftSquareBracketToken, ColonToken, CommaToken, StringToken, RightSquareBracketToken, NullToken, FreeTextToken, IntegerToken, BoolToken, PrecisionNumberToken } from '../src/tokens';
+import { tokenize } from '../../src/parsing';
+import { LeftBracketToken, RightBracketToken, LeftSquareBracketToken, ColonToken, CommaToken, StringToken, RightSquareBracketToken, NullToken, FreeTextToken, IntegerToken, BoolToken, PrecisionNumberToken } from '../../src/tokens';
 
 describe('Tokenize', () => {
 	it('should return empty array', () => {

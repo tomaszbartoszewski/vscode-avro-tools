@@ -1,7 +1,7 @@
-import { KeyValuePair, ArrayItem, ObjectNode, ArrayNode } from '../src/syntaxTree';
-import { StringToken, ColonToken, CommaToken, LeftBracketToken, RightBracketToken } from '../src/tokens';
+import { KeyValuePair, ArrayItem, ObjectNode, ArrayNode } from '../../src/syntaxTree';
+import { StringToken, ColonToken, CommaToken, LeftBracketToken, RightBracketToken } from '../../src/tokens';
 import * as assert from 'assert';
-import { keyValuePair, arrayItem, objectNode, arrayNode } from './syntaxTreeUtils';
+import { keyValuePair, arrayItem, objectNode, arrayNode } from '../syntaxTreeUtils';
 
 describe('SyntaxTree', () => {
 	[

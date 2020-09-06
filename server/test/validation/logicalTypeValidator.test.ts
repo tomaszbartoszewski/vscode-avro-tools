@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { Tree } from '../src/syntaxTree';
-import { ValidationMessage, ValidationSeverity } from '../src/validation/validators'
-import { LogicalTypeValidator } from '../src/validation/logicalTypeValidator'
-import { StringToken, IntegerToken } from '../src/tokens';
-import { keyValuePair, nodeWithoutBrackets } from './syntaxTreeUtils';
+import { Tree } from '../../src/syntaxTree';
+import { ValidationMessage, ValidationSeverity } from '../../src/validation/validators'
+import { LogicalTypeValidator } from '../../src/validation/logicalTypeValidator'
+import { StringToken, IntegerToken } from '../../src/tokens';
+import { keyValuePair, nodeWithoutBrackets } from '../syntaxTreeUtils';
 
 describe('LogicalTypeValidator', () => {
 	const validator = new LogicalTypeValidator();

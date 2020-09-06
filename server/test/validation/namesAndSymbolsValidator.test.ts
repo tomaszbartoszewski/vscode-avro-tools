@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { keyValuePair, nodeWithoutBrackets, validObjectNodeWithType, arrayNodeWithoutBrackets } from './syntaxTreeUtils';
-import { StringToken, IntegerToken, CommaToken } from '../src/tokens';
-import { NamesAndSymbolsValidator } from '../src/validation/namesAndSymbolsValidator'
-import { Tree } from '../src/syntaxTree';
-import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
+import { keyValuePair, nodeWithoutBrackets, validObjectNodeWithType, arrayNodeWithoutBrackets } from '../syntaxTreeUtils';
+import { StringToken, IntegerToken, CommaToken } from '../../src/tokens';
+import { NamesAndSymbolsValidator } from '../../src/validation/namesAndSymbolsValidator'
+import { Tree } from '../../src/syntaxTree';
+import { ValidationMessage, ValidationSeverity } from '../../src/validation/validators';
 
 describe('NamesAndSymbolsValidator', () => {
 	const validator = new NamesAndSymbolsValidator();

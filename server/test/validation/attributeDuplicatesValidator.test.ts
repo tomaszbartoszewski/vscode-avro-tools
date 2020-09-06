@@ -1,9 +1,9 @@
 import * as assert from 'assert';
-import { Tree } from '../src/syntaxTree';
-import { StringToken, LeftSquareBracketToken } from '../src/tokens';
-import { AttributeDuplicatesValidator } from '../src/validation/attributeDuplicatesValidator'
-import { ValidationMessage, ValidationSeverity } from '../src/validation/validators';
-import { objectNode, keyValuePair, arrayNode, arrayItem, validObjectNodeWithType } from './syntaxTreeUtils';
+import { Tree } from '../../src/syntaxTree';
+import { StringToken, LeftSquareBracketToken } from '../../src/tokens';
+import { AttributeDuplicatesValidator } from '../../src/validation/attributeDuplicatesValidator'
+import { ValidationMessage, ValidationSeverity } from '../../src/validation/validators';
+import { objectNode, keyValuePair, arrayNode, arrayItem, validObjectNodeWithType } from '../syntaxTreeUtils';
 
 describe('AttributeDuplicatesValidator', () => {
 	const validator = new AttributeDuplicatesValidator();

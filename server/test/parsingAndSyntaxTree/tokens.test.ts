@@ -1,4 +1,4 @@
-import { StringToken } from '../src/tokens';
+import { StringToken } from '../../src/tokens';
 import * as assert from 'assert';
 
 describe('Tokens', () => {
