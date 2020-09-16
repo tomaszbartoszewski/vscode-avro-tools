@@ -1,94 +1,117 @@
-import { Token, LeftBracketToken, RightBracketToken, LeftSquareBracketToken, RightSquareBracketToken, StringToken, ColonToken } from '../tokens';
+import { Token, LeftBracketToken, RightBracketToken, LeftSquareBracketToken, RightSquareBracketToken, StringToken, ColonToken, BoolToken, CommaToken, FreeTextToken, IntegerToken, NullToken, PrecisionNumberToken } from '../tokens';
 import { ValidationMessage, ValidationMessageAggregator } from './validators';
-
-enum JSONLevel {
-	Object,
-	Array
-}
 
 export class JsonTokenValidator{
 	validate(tokens: Token[]): ValidationMessage[] {
-		const messageAggregator = new ValidationMessageAggregator();
-		const brackets: LeftBracketToken|LeftSquareBracketToken[] = [];
-		// const brackets = new BracketsLinkedList();
-
 		if (tokens.length === 0 || (tokens.length === 1 && tokens[0] instanceof StringToken)) {
 			return [];
 		}
 
-		// if (!(tokens[0] instanceof LeftBracketToken))
-		// {
-		// 	messageAggregator.addError(tokens[0], 'Schema should start with a {');
-		// }
-		let i = 0;
-		let currentLevel = JSONLevel.Object;
-
-		const getLevel = function(): JSONLevel {
-			if (brackets.length > 0) {
-				if (brackets[brackets.length - 1] instanceof LeftBracketToken) {
-					return JSONLevel.Object;
-				}
-				else if (brackets[brackets.length - 1] instanceof LeftSquareBracketToken) {
-					return JSONLevel.Array;
-				}
-			}
-			return JSONLevel.Object;
-		}
-
-		while (i < tokens.length) {
-			if (tokens[i] instanceof LeftBracketToken || tokens[i] instanceof LeftSquareBracketToken) {
-				brackets.push(tokens[i]);
-				currentLevel = getLevel();
-			}
-			else if (tokens[i] instanceof RightBracketToken || tokens[i] instanceof RightSquareBracketToken) {
-				brackets.pop();
-				currentLevel = getLevel();
-			}
-			else if (currentLevel === JSONLevel.Object) {
-				if (!(tokens[i] instanceof StringToken)) {
-					messageAggregator.addError(tokens[i], 'String as an attribute key expected');
-				}
-
-				if (i + 1 >= tokens.length) {
-					messageAggregator.addError(tokens[i], 'Colon expected');
-				}
-				else if (!(tokens[i + 1] instanceof ColonToken)) {
-					messageAggregator.addError(tokens[i + 1], 'Colon expected');
-					i++;
-				}
-				else if (i + 2 >= tokens.length) {
-					i++;
-					messageAggregator.addError(tokens[i], 'Value expected');
-				}
-				else {
-					i += 2;
-				}
-
-			}
-			i++;
-		}
-
-		if (brackets.length > 0) {
-			const lastBracket = brackets.pop();
-			if (lastBracket instanceof LeftBracketToken) {
-				messageAggregator.addError(lastBracket, 'Closing bracket expected');
-			}
-		}
-
-		// tokens.forEach(token => {
-		// 	if (token instanceof LeftBracketToken) {
-		// 		brackets.append(token);
-		// 	}
-		// });
-
-		// brackets.removeMatchingPairs();
-		// brackets.toArray().forEach(token => {
-		// 	if (token instanceof LeftBracketToken) {
-		// 		messageAggregator.addError(token, 'Missing matching }');
-		// 	}
-		// });
-
+		const messageAggregator = new ValidationMessageAggregator();
+		this.getNode(tokens, messageAggregator);
 		return messageAggregator.getAll();
+	}
+
+	getNode(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
+		let position = 0;
+	
+		if (tokens[position] instanceof LeftBracketToken) {
+			position++;
+		}
+		let movedForward = true;
+		let hasClosingBracket = false;
+		while (position < tokens.length && movedForward) {
+			movedForward = false;
+			if (tokens[position] instanceof RightBracketToken) {
+				position++;
+				hasClosingBracket = true;
+				break;
+			}
+			if (position < tokens.length) {
+				if (!(tokens[position] instanceof StringToken)) {
+					messageAggregator.addError(tokens[position], 'String as an attribute key expected');
+				}
+				position++;
+				movedForward = true;
+			}
+			if (position >= tokens.length) {
+				messageAggregator.addError(tokens[position - 1], 'Colon expected');
+			}
+			else if (tokens[position] instanceof ColonToken){
+				position++;
+				movedForward = true;
+			}
+			else {
+				messageAggregator.addError(tokens[position], 'Colon expected');
+			}
+			const move = this.getValue(tokens.slice(position), false, messageAggregator)
+			if (move > 0) {
+				movedForward = true;
+			}
+			else {
+				messageAggregator.addError(tokens[position - 1], 'Value expected');
+			}
+			position += move;
+			if (position < tokens.length && tokens[position] instanceof CommaToken){
+				position++;
+				movedForward = true;
+			}
+			if (movedForward) {
+			}
+		}
+		if (!hasClosingBracket && tokens.length > 0) {
+			messageAggregator.addError(tokens[0], 'Closing bracket expected');
+		}
+
+		return position;
+	}
+	
+	getValue(tokens: Token[], isArray: boolean, messageAggregator: ValidationMessageAggregator): number {
+		const position = 0;
+	
+		if (isArray && tokens[position] instanceof ColonToken) {
+			return 1;
+		}
+		if (tokens[position] instanceof StringToken || tokens[position] instanceof IntegerToken
+			|| tokens[position] instanceof PrecisionNumberToken || tokens[position] instanceof BoolToken
+			|| tokens[position] instanceof NullToken || tokens[position] instanceof FreeTextToken) {
+			return 1;
+		}
+		if (tokens[position] instanceof LeftSquareBracketToken) {
+			return this.getArray(tokens, messageAggregator);
+		}
+		if (tokens[position] instanceof LeftBracketToken) {
+			return this.getNode(tokens, messageAggregator);
+		}
+	
+		return 0;
+	}
+	
+	getArray(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
+		let position = 0;
+		if (tokens[position] instanceof LeftSquareBracketToken) {
+			position++;
+		}
+		let movedForward = true;
+		while (position < tokens.length && movedForward) {
+			movedForward = false;
+			if (tokens[position] instanceof RightSquareBracketToken) {
+				position++;
+				return position;
+			}
+			const move = this.getValue(tokens.slice(position), true, messageAggregator);
+			if (move > 0) {
+				position += move;
+				movedForward = true;
+			}
+			if (position < tokens.length && tokens[position] instanceof CommaToken){
+				position++;
+				movedForward = true;
+			}
+			if (movedForward) {
+			}
+		}
+		return position;
 	}
 }
 

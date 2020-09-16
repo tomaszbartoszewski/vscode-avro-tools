@@ -18,8 +18,8 @@ describe('JsonTokenValidator', () => {
 	it('Does not have matching }', () => {
 		const highlights = validateText('{');
 
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], error(0, 1, 'Closing bracket expected'));
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(0, 1, 'Closing bracket expected'));
 	});
 
 	[
@@ -28,35 +28,33 @@ describe('JsonTokenValidator', () => {
 		'"string"'
 	].forEach(text => {
 		it('Is valid ' + text, () => {
-			assert.equal(validateText(text).length, 0);
+			assert.strictEqual(validateText(text).length, 0);
 		})
 	});
 
 	it('Attribute name is not a string', () => {
 		const highlights = validateText('{false:"a"}');
 
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], error(1, 6, 'String as an attribute key expected'));
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(1, 6, 'String as an attribute key expected'));
 	});
 
 	it('Attribute is missing a colon', () => {
 		const highlights = validateText('{"a"');
 
-		assert.equal(highlights.length, 2);
-		assert.deepEqual(highlights[0], error(1, 4, 'Colon expected'));
+		assert.deepStrictEqual(highlights[0], error(1, 4, 'Colon expected'));
 	});
 
 	it('Attribute is missing a value', () => {
 		const highlights = validateText('{"a":');
 
-		assert.equal(highlights.length, 2);
-		assert.deepEqual(highlights[0], error(4, 5, 'Value expected'));
+		assert.deepStrictEqual(highlights[0], error(4, 5, 'Value expected'));
 	});
 
 	it('Attribute is missing a colon before value', () => {
 		const highlights = validateText('{"a" "b"}');
 
-		assert.equal(highlights.length, 1);
-		assert.deepEqual(highlights[0], error(5, 8, 'Colon expected'));
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(5, 8, 'Colon expected'));
 	});
 });
