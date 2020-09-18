@@ -19,12 +19,12 @@ describe('JsonTokenValidator', () => {
 		const highlights = validateText('{');
 
 		assert.strictEqual(highlights.length, 1);
-		assert.deepStrictEqual(highlights[0], error(0, 1, 'Closing bracket expected'));
+		assert.deepStrictEqual(highlights[0], error(0, 1, 'Closing bracket } expected'));
 	});
 
 	[
 		'{"type": "string"}',
-		// '{"type": "record", "name":"test", "fields":[{"type": "string", "name": "a"}]}',
+		'{"type": "record", "name":"test", "fields":[{"type": "string", "name": "a"}]}',
 		'"string"'
 	].forEach(text => {
 		it('Is valid ' + text, () => {
@@ -36,7 +36,7 @@ describe('JsonTokenValidator', () => {
 		const highlights = validateText('{false:"a"}');
 
 		assert.strictEqual(highlights.length, 1);
-		assert.deepStrictEqual(highlights[0], error(1, 6, 'String as an attribute key expected'));
+		assert.deepStrictEqual(highlights[0], error(1, 6, 'Attribute key must be double quoted'));
 	});
 
 	it('Attribute is missing a colon', () => {
@@ -56,5 +56,31 @@ describe('JsonTokenValidator', () => {
 
 		assert.strictEqual(highlights.length, 1);
 		assert.deepStrictEqual(highlights[0], error(5, 8, 'Colon expected'));
+	});
+
+	it('Array is missing a closing bracket', () => {
+		const highlights = validateText('{"a":[');
+
+		assert.deepStrictEqual(highlights[0], error(5, 6, 'Closing bracket ] expected'));
+	});
+
+	it('Object is missing a closing bracket after array', () => {
+		const highlights = validateText('{"a":[]');
+
+		assert.deepStrictEqual(highlights[0], error(6, 7, 'Closing bracket } expected'));
+	});
+
+	it('Free text token is highlighted', () => {
+		const highlights = validateText('{"a": b1 }');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(6, 8, 'Unrecognized value'));
+	});
+
+	it('Single quote instead of double quote', () => {
+		const highlights = validateText('{\'a\':1}');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(1, 4, 'Attribute key must be double quoted'));
 	});
 });

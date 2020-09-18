@@ -29,7 +29,7 @@ export class JsonTokenValidator{
 			}
 			if (position < tokens.length) {
 				if (!(tokens[position] instanceof StringToken)) {
-					messageAggregator.addError(tokens[position], 'String as an attribute key expected');
+					messageAggregator.addError(tokens[position], 'Attribute key must be double quoted');
 				}
 				position++;
 				movedForward = true;
@@ -59,8 +59,8 @@ export class JsonTokenValidator{
 			if (movedForward) {
 			}
 		}
-		if (!hasClosingBracket && tokens.length > 0) {
-			messageAggregator.addError(tokens[0], 'Closing bracket expected');
+		if (!hasClosingBracket && tokens.length > 0 && position > 0) {
+			messageAggregator.addError(tokens[position - 1], 'Closing bracket } expected');
 		}
 
 		return position;
@@ -74,7 +74,11 @@ export class JsonTokenValidator{
 		}
 		if (tokens[position] instanceof StringToken || tokens[position] instanceof IntegerToken
 			|| tokens[position] instanceof PrecisionNumberToken || tokens[position] instanceof BoolToken
-			|| tokens[position] instanceof NullToken || tokens[position] instanceof FreeTextToken) {
+			|| tokens[position] instanceof NullToken) {
+			return 1;
+		}
+		else if (tokens[position] instanceof FreeTextToken) {
+			messageAggregator.addError(tokens[position], 'Unrecognized value');
 			return 1;
 		}
 		if (tokens[position] instanceof LeftSquareBracketToken) {
@@ -93,10 +97,12 @@ export class JsonTokenValidator{
 			position++;
 		}
 		let movedForward = true;
+		let hasClosingBracket = false;
 		while (position < tokens.length && movedForward) {
 			movedForward = false;
 			if (tokens[position] instanceof RightSquareBracketToken) {
 				position++;
+				hasClosingBracket = true;
 				return position;
 			}
 			const move = this.getValue(tokens.slice(position), true, messageAggregator);
@@ -111,6 +117,10 @@ export class JsonTokenValidator{
 			if (movedForward) {
 			}
 		}
+		if (!hasClosingBracket && tokens.length > 0 && position > 0) {
+			messageAggregator.addError(tokens[position - 1], 'Closing bracket ] expected');
+		}
+
 		return position;
 	}
 }
