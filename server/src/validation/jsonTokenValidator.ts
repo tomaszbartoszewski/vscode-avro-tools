@@ -20,6 +20,7 @@ export class JsonTokenValidator{
 		}
 		let movedForward = true;
 		let hasClosingBracket = false;
+		let commaToken: Token | null = null;
 		while (position < tokens.length && movedForward) {
 			movedForward = false;
 			if (tokens[position] instanceof RightBracketToken) {
@@ -52,11 +53,19 @@ export class JsonTokenValidator{
 				messageAggregator.addError(tokens[position - 1], 'Value expected');
 			}
 			position += move;
+			commaToken = null;
 			if (position < tokens.length && tokens[position] instanceof CommaToken){
+				commaToken = tokens[position];
 				position++;
 				movedForward = true;
 			}
-			if (movedForward) {
+		}
+		if (commaToken !== null) {
+			if (hasClosingBracket) {
+				messageAggregator.addError(commaToken, 'Trailing comma');
+			}
+			else {
+				messageAggregator.addError(commaToken, 'Attribute expected');
 			}
 		}
 		if (!hasClosingBracket && tokens.length > 0 && position > 0) {
@@ -98,23 +107,32 @@ export class JsonTokenValidator{
 		}
 		let movedForward = true;
 		let hasClosingBracket = false;
+		let commaToken: Token | null = null;
 		while (position < tokens.length && movedForward) {
 			movedForward = false;
 			if (tokens[position] instanceof RightSquareBracketToken) {
 				position++;
 				hasClosingBracket = true;
-				return position;
+				break;
 			}
 			const move = this.getValue(tokens.slice(position), true, messageAggregator);
 			if (move > 0) {
 				position += move;
 				movedForward = true;
 			}
+			commaToken = null;
 			if (position < tokens.length && tokens[position] instanceof CommaToken){
+				commaToken = tokens[position];
 				position++;
 				movedForward = true;
 			}
-			if (movedForward) {
+		}
+		if (commaToken !== null) {
+			if (hasClosingBracket) {
+				messageAggregator.addError(commaToken, 'Trailing comma');
+			}
+			else {
+				messageAggregator.addError(commaToken, 'Value expected');
 			}
 		}
 		if (!hasClosingBracket && tokens.length > 0 && position > 0) {

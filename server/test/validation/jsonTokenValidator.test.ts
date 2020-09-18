@@ -83,4 +83,30 @@ describe('JsonTokenValidator', () => {
 		assert.strictEqual(highlights.length, 1);
 		assert.deepStrictEqual(highlights[0], error(1, 4, 'Attribute key must be double quoted'));
 	});
+
+	it('Trailing comma when a comma is before a closing bracket', () => {
+		const highlights = validateText('{"a":1,}');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(6, 7, 'Trailing comma'));
+	});
+
+	it('Attribute expected when nothing after a comma', () => {
+		const highlights = validateText('{"a":1,');
+
+		assert.deepStrictEqual(highlights[0], error(6, 7, 'Attribute expected'));
+	});
+
+	it('Trailing comma when a comma is before an array\'s closing bracket', () => {
+		const highlights = validateText('{"a":[1,]}');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(7, 8, 'Trailing comma'));
+	});
+
+	it('Value expected when nothing after a comma in an array', () => {
+		const highlights = validateText('{"a":[1,');
+
+		assert.deepStrictEqual(highlights[0], error(7, 8, 'Value expected'));
+	});
 });
