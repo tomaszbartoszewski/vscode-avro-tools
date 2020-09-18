@@ -23,12 +23,16 @@ describe('JsonTokenValidator', () => {
 	});
 
 	[
-		'{"type": "string"}',
-		'{"type": "record", "name":"test", "fields":[{"type": "string", "name": "a"}]}',
-		'"string"'
-	].forEach(text => {
-		it('Is valid ' + text, () => {
-			assert.strictEqual(validateText(text).length, 0);
+		['{"type": "string"}', 0],
+		['{"type": "record", "name":"test", "fields":[{"type": "string", "name": "a"}]}', 0],
+		['"string"', 0],
+		['false', 1],
+		['{"type": "record", "name":"test", "fields":[{"type": "string" "name" "a"}]}', 2],
+		['{"type": "record", "name":"test", "fields":[{"type": "string", "name": "a"', 3],
+		['{"type": "st', 2],
+	].forEach(([text, errors]: [string, number]) => {
+		it('Is valid \'' + text + '\' number of errors ' + errors, () => {
+			assert.strictEqual(validateText(text).length, errors);
 		})
 	});
 
@@ -122,5 +126,12 @@ describe('JsonTokenValidator', () => {
 
 		assert.strictEqual(highlights.length, 1);
 		assert.deepStrictEqual(highlights[0], error(8, 9, 'Expected comma'));
+	});
+
+	it('Single value is incorrect', () => {
+		const highlights = validateText('abc');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(0, 3, 'Expected a JSON object or a string literal'));
 	});
 });

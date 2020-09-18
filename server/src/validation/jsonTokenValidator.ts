@@ -8,7 +8,15 @@ export class JsonTokenValidator{
 		}
 
 		const messageAggregator = new ValidationMessageAggregator();
-		this.getNode(tokens, messageAggregator);
+		if (tokens.length > 0) {
+			if (tokens[0] instanceof LeftBracketToken) {
+				this.getNode(tokens, messageAggregator);
+			}
+			else {
+				messageAggregator.addError(tokens[0], 'Expected a JSON object or a string literal');
+			}
+		}
+
 		return messageAggregator.getAll();
 	}
 
