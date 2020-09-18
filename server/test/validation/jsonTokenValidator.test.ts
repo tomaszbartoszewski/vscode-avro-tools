@@ -109,4 +109,18 @@ describe('JsonTokenValidator', () => {
 
 		assert.deepStrictEqual(highlights[0], error(7, 8, 'Value expected'));
 	});
+
+	it('Missing comma between attributes', () => {
+		const highlights = validateText('{"a":1 "b":2}');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(7, 10, 'Expected comma'));
+	});
+
+	it('Missing comma between array values', () => {
+		const highlights = validateText('{"a":[1 2]}');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(8, 9, 'Expected comma'));
+	});
 });

@@ -21,6 +21,7 @@ export class JsonTokenValidator{
 		let movedForward = true;
 		let hasClosingBracket = false;
 		let commaToken: Token | null = null;
+		let attributeIteration = 0;
 		while (position < tokens.length && movedForward) {
 			movedForward = false;
 			if (tokens[position] instanceof RightBracketToken) {
@@ -29,6 +30,10 @@ export class JsonTokenValidator{
 				break;
 			}
 			if (position < tokens.length) {
+				if (commaToken === null && attributeIteration > 0) {
+					messageAggregator.addError(tokens[position], 'Expected comma');
+				}
+
 				if (!(tokens[position] instanceof StringToken)) {
 					messageAggregator.addError(tokens[position], 'Attribute key must be double quoted');
 				}
@@ -59,6 +64,7 @@ export class JsonTokenValidator{
 				position++;
 				movedForward = true;
 			}
+			attributeIteration++;
 		}
 		if (commaToken !== null) {
 			if (hasClosingBracket) {
@@ -74,7 +80,7 @@ export class JsonTokenValidator{
 
 		return position;
 	}
-	
+
 	getValue(tokens: Token[], isArray: boolean, messageAggregator: ValidationMessageAggregator): number {
 		const position = 0;
 	
@@ -99,7 +105,7 @@ export class JsonTokenValidator{
 	
 		return 0;
 	}
-	
+
 	getArray(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
 		let position = 0;
 		if (tokens[position] instanceof LeftSquareBracketToken) {
@@ -108,6 +114,7 @@ export class JsonTokenValidator{
 		let movedForward = true;
 		let hasClosingBracket = false;
 		let commaToken: Token | null = null;
+		let valueIteration = 0;
 		while (position < tokens.length && movedForward) {
 			movedForward = false;
 			if (tokens[position] instanceof RightSquareBracketToken) {
@@ -117,6 +124,9 @@ export class JsonTokenValidator{
 			}
 			const move = this.getValue(tokens.slice(position), true, messageAggregator);
 			if (move > 0) {
+				if (commaToken === null && valueIteration > 0) {
+					messageAggregator.addError(tokens[position], 'Expected comma');
+				}
 				position += move;
 				movedForward = true;
 			}
@@ -126,6 +136,7 @@ export class JsonTokenValidator{
 				position++;
 				movedForward = true;
 			}
+			valueIteration++;
 		}
 		if (commaToken !== null) {
 			if (hasClosingBracket) {
