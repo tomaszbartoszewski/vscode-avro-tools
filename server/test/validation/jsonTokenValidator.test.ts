@@ -153,4 +153,11 @@ describe('JsonTokenValidator', () => {
 		assert.strictEqual(highlights.length, 1);
 		assert.deepStrictEqual(highlights[0], error(9, 10, 'Unexpected closing bracket }'));
 	});
+
+	it('End of file expected after record', () => {
+		const highlights = validateText('{}{');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(2, 3, 'End of file expected'));
+	});
 });

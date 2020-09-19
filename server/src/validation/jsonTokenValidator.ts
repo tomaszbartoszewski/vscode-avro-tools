@@ -10,7 +10,10 @@ export class JsonTokenValidator{
 		const messageAggregator = new ValidationMessageAggregator();
 		if (tokens.length > 0) {
 			if (tokens[0] instanceof LeftBracketToken) {
-				this.validateNode(tokens, messageAggregator);
+				const position = this.validateNode(tokens, messageAggregator);
+				if (position < tokens.length) {
+					messageAggregator.addError(tokens[position], 'End of file expected');
+				}
 			}
 			else {
 				messageAggregator.addError(tokens[0], 'Expected a JSON object or a string literal');
