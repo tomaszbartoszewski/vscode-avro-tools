@@ -142,6 +142,16 @@ export class JsonTokenValidator{
 				hasClosingBracket = true;
 				break;
 			}
+
+			if (tokens[position] instanceof RightBracketToken) {
+				messageAggregator.addError(tokens[position], 'Unexpected closing bracket }');
+				position++;
+				movedForward = true;
+				if (position < tokens.length && tokens[position] instanceof RightSquareBracketToken) {
+					continue;
+				}
+			}
+
 			const move = this.getValue(tokens.slice(position), true, messageAggregator);
 			if (move > 0) {
 				if (commaToken === null && valueIteration > 0) {
