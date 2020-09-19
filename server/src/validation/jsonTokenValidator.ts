@@ -10,7 +10,7 @@ export class JsonTokenValidator{
 		const messageAggregator = new ValidationMessageAggregator();
 		if (tokens.length > 0) {
 			if (tokens[0] instanceof LeftBracketToken) {
-				this.getNode(tokens, messageAggregator);
+				this.validateNode(tokens, messageAggregator);
 			}
 			else {
 				messageAggregator.addError(tokens[0], 'Expected a JSON object or a string literal');
@@ -20,9 +20,9 @@ export class JsonTokenValidator{
 		return messageAggregator.getAll();
 	}
 
-	getNode(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
+	private validateNode(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
 		let position = 0;
-	
+
 		if (tokens[position] instanceof LeftBracketToken) {
 			position++;
 		}
@@ -70,7 +70,7 @@ export class JsonTokenValidator{
 			else {
 				messageAggregator.addError(tokens[position], 'Colon expected');
 			}
-			const move = this.getValue(tokens.slice(position), false, messageAggregator)
+			const move = this.validateValue(tokens.slice(position), false, messageAggregator)
 			if (move > 0) {
 				movedForward = true;
 			}
@@ -101,9 +101,9 @@ export class JsonTokenValidator{
 		return position;
 	}
 
-	getValue(tokens: Token[], isArray: boolean, messageAggregator: ValidationMessageAggregator): number {
+	private validateValue(tokens: Token[], isArray: boolean, messageAggregator: ValidationMessageAggregator): number {
 		const position = 0;
-	
+
 		if (isArray && tokens[position] instanceof ColonToken) {
 			return 1;
 		}
@@ -117,16 +117,16 @@ export class JsonTokenValidator{
 			return 1;
 		}
 		if (tokens[position] instanceof LeftSquareBracketToken) {
-			return this.getArray(tokens, messageAggregator);
+			return this.validateArray(tokens, messageAggregator);
 		}
 		if (tokens[position] instanceof LeftBracketToken) {
-			return this.getNode(tokens, messageAggregator);
+			return this.validateNode(tokens, messageAggregator);
 		}
-	
+
 		return 0;
 	}
 
-	getArray(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
+	private validateArray(tokens: Token[], messageAggregator: ValidationMessageAggregator): number {
 		let position = 0;
 		if (tokens[position] instanceof LeftSquareBracketToken) {
 			position++;
@@ -152,7 +152,7 @@ export class JsonTokenValidator{
 				}
 			}
 
-			const move = this.getValue(tokens.slice(position), true, messageAggregator);
+			const move = this.validateValue(tokens.slice(position), true, messageAggregator);
 			if (move > 0) {
 				if (commaToken === null && valueIteration > 0) {
 					messageAggregator.addError(tokens[position], 'Expected comma');
@@ -183,80 +183,3 @@ export class JsonTokenValidator{
 		return position;
 	}
 }
-
-// class BracketNode {
-// 	next: BracketNode | null = null;
-// 	token: LeftBracketToken | LeftSquareBracketToken | RightBracketToken | RightSquareBracketToken;
-
-// 	constructor (token: LeftBracketToken | LeftSquareBracketToken | RightBracketToken | RightSquareBracketToken) {
-// 		this.token = token;
-// 	}
-// }
-
-// class BracketsLinkedList {
-// 	private head: BracketNode | null = null;
-// 	// private len: number = 0;
-
-// 	append(token: LeftBracketToken | LeftSquareBracketToken | RightBracketToken | RightSquareBracketToken) {
-// 		const node = new BracketNode(token);
-// 		if (this.head === null) {
-// 			this.head = node;
-// 		}
-// 		else {
-// 			let current = this.head;
-// 			while (current.next !== null) {
-// 				current = current.next;
-// 			}
-// 			current.next = node;
-// 		}
-// 		// this.len++;
-// 	}
-
-// 	getNotMatchingBrackets(): Token[] {
-// 		let removed = this.removeMatchingPairs();
-		
-// 	}
-
-// 	removeMatchingPairs(): boolean {
-// 		if (this.head === null) {
-// 			return false;
-// 		}
-// 		let removed = false;
-// 		let current: BracketNode = this.head;
-// 		let previous: BracketNode | null = null;
-// 		while (current.next !== null) {
-// 			let next = current.next;
-// 			if (current.token instanceof LeftBracketToken && next.token instanceof RightBracketToken) {
-// 				if (previous === null) {
-// 					this.head = next.next;
-// 				}
-// 				else {
-// 					previous.next = next.next;
-// 				}
-// 				if (next.next instanceof BracketNode) {
-// 					current = next.next;
-// 				}
-// 				else {
-// 					break;
-// 				}
-// 				// this.len -= 2;
-// 				removed = true;
-// 			}
-// 			else {
-// 				previous = current;
-// 				current = next;
-// 			}
-// 		}
-// 		return removed;
-// 	}
-
-// 	toArray(): Token[] {
-// 		const result: Token[] = [];
-// 		let current: BracketNode | null = this.head;
-// 		while (current !== null) {
-// 			result.push(current.token);
-// 			current = current.next;
-// 		}
-// 		return result;
-// 	}
-// }
