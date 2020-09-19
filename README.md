@@ -34,17 +34,11 @@ This extension doesn't use settings.
 
 ## Known Issues
 
-* Tolerance to invalid syntax is very low
+* Tolerance to invalid syntax could be more sophisticated
 
 ## Planned Features
 
-* Validate duplicated names for fields
 * Validate if enum symbols are unique
-* Validate text separators ("}", "]", ":", "," but syntax tree building is causing entire document to go read on missing closing bracket when attribute had value, that could be added)
 * Validating keys available in Avro (Based on documentation other keys are correct " Attributes not defined in this document are permitted as metadata, but must not affect the format of serialized data. ") Maybe configurable strict validation to only expect AVRO fields
 * Validating values in array
 * Autocomplete of keys, types, defaults
-
-## Release Notes
-
-No releases yet
