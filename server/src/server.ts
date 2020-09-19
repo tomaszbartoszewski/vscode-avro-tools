@@ -7,11 +7,9 @@ import {
   InitializeParams,
   DidChangeConfigurationNotification,
   CompletionItem,
-  CompletionItemKind,
   TextDocumentPositionParams,
   TextDocumentSyncKind,
   InitializeResult,
-  Position,
   Range,
   DocumentFormattingParams,
   TextEdit
@@ -21,11 +19,10 @@ import {
   TextDocument
 } from 'vscode-languageserver-textdocument';
 import { tokenize } from './parsing';
-import { FreeTextToken } from './tokens';
 import buildTree from './buildSyntaxTree';
 import { Validator, ValidationSeverity, ValidationMessage } from './validation/validators';
+import { JsonTokenValidator } from './validation/jsonTokenValidator';
 import { ExpectedAttributesValidator } from './validation/expectedAttributesValidator';
-import { TextSeparatorsValidator } from './validation/textSeparatorsValidator';
 import { AttributeDuplicatesValidator } from './validation/attributeDuplicatesValidator';
 import { NamesAndSymbolsValidator } from './validation/namesAndSymbolsValidator';
 import { ValueTypesValidator } from './validation/valueTypesValidator';
@@ -160,18 +157,34 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
   console.time('tokenize');
   let tokens = tokenize(text);
   console.timeEnd('tokenize');
-  console.time('buildTree');
-  const tree = buildTree(tokens);
-  console.timeEnd('buildTree');
-  // console.log(tree);
-  let pattern = /\b[A-Z]{2,}\b/g;
-  let m: RegExpExecArray | null;
+
+  console.time('jsonValidator');
+  const jsonValidator = new JsonTokenValidator()
+  const jsonHighlights = jsonValidator.validate(tokens);
+  console.timeEnd('jsonValidator');
 
   let problems = 0;
   let diagnostics: Diagnostic[] = [];
 
+  jsonHighlights.forEach(function (value) {
+    problems++;
+    let diagnostic: Diagnostic = {
+      severity: (value.severity === ValidationSeverity.Error) ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
+      range: {
+        start: textDocument.positionAt(value.start),
+        end: textDocument.positionAt(value.end)
+      },
+      message: value.message,
+      source: 'avro-tools'
+    };
+    diagnostics.push(diagnostic);
+  });
+
+  console.time('buildTree');
+  const tree = buildTree(tokens);
+  console.timeEnd('buildTree');
+
   const validators: Validator[] = [
-    new TextSeparatorsValidator(),
     new AttributeDuplicatesValidator(),
     new ExpectedAttributesValidator(),
     new NamesAndSymbolsValidator(),
@@ -200,58 +213,6 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     };
     diagnostics.push(diagnostic);
   });
-
-  // let curr = iter.next();
-  // while (!curr.done) {
-  //   problems++;
-  //   let diagnostic: Diagnostic = {
-  //     severity: (curr.value.severity === ValidationSeverity.Error) ? DiagnosticSeverity.Error : DiagnosticSeverity.Warning,
-  //     range: {
-  //       start: textDocument.positionAt(curr.value.start),
-  //       end: textDocument.positionAt(curr.value.end)
-  //     },
-  //     message: curr.value.message,
-  //     source: 'ex'
-  //   };
-  //   diagnostics.push(diagnostic);
-  // }
-  // assert.equal(curr.done, false);
-
-  tokens.forEach(function (tokenInfo) {
-    if (tokenInfo instanceof FreeTextToken) {
-      problems++;
-      let diagnostic: Diagnostic = {
-        severity: DiagnosticSeverity.Error,
-        range: {
-          start: textDocument.positionAt(tokenInfo.position),
-          end: textDocument.positionAt(tokenInfo.position + tokenInfo.length)
-        },
-        message: `Unrecognized value`,
-        source: 'avro-tools'
-      };
-      diagnostics.push(diagnostic);
-    }
-  });
-
-  // try {
-  //   let content = JSON.parse(text);
-  //   if (content.type === "null" && content.default !== null) {
-  //     problems++;
-  //     let diagnostic: Diagnostic = {
-  //       severity: DiagnosticSeverity.Error,
-  //       range: {
-  //         start: textDocument.positionAt(0),
-  //         end: textDocument.positionAt(text.length)
-  //       },
-  //       message: `Default for type null can only be null`,
-  //       source: 'ex'
-  //     };
-  //     diagnostics.push(diagnostic);
-  //   }
-
-  // } catch(e) {
-
-  // }
 
   // while ((m = pattern.exec(text)) && problems < settings.maxNumberOfProblems) {
   //   problems++;
