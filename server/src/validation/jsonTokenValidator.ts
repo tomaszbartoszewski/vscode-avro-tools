@@ -37,17 +37,29 @@ export class JsonTokenValidator{
 				hasClosingBracket = true;
 				break;
 			}
-			if (position < tokens.length) {
-				if (commaToken === null && attributeIteration > 0) {
-					messageAggregator.addError(tokens[position], 'Expected comma');
-				}
 
-				if (!(tokens[position] instanceof StringToken)) {
-					messageAggregator.addError(tokens[position], 'Attribute key must be double quoted');
+			if (tokens[position] instanceof RightSquareBracketToken) {
+				messageAggregator.addError(tokens[position], 'Unexpected closing bracket ]');
+				position++;
+				movedForward = true;
+				if (position < tokens.length && tokens[position] instanceof RightBracketToken) {
+					continue;
 				}
+			}
+			else if (!(tokens[position] instanceof StringToken)) {
+				messageAggregator.addError(tokens[position], 'Attribute key must be double quoted');
 				position++;
 				movedForward = true;
 			}
+			else {
+				position++;
+				movedForward = true;
+			}
+
+			if (commaToken === null && attributeIteration > 0) {
+				messageAggregator.addError(tokens[position - 1], 'Expected comma');
+			}
+
 			if (position >= tokens.length) {
 				messageAggregator.addError(tokens[position - 1], 'Colon expected');
 			}

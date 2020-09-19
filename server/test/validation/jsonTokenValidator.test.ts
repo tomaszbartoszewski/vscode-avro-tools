@@ -30,6 +30,8 @@ describe('JsonTokenValidator', () => {
 		['{"type": "record", "name":"test", "fields":[{"type": "string" "name" "a"}]}', 2],
 		['{"type": "record", "name":"test", "fields":[{"type": "string", "name": "a"', 3],
 		['{"type": "st', 2],
+		['{"asd":{"qwe":false,"werwe":12]}}', 1],
+		['{"asd":{"qwe":false,"werwe":12,]}}', 2]
 	].forEach(([text, errors]: [string, number]) => {
 		it('Is valid \'' + text + '\' number of errors ' + errors, () => {
 			assert.strictEqual(validateText(text).length, errors);
@@ -133,5 +135,12 @@ describe('JsonTokenValidator', () => {
 
 		assert.strictEqual(highlights.length, 1);
 		assert.deepStrictEqual(highlights[0], error(0, 3, 'Expected a JSON object or a string literal'));
+	});
+
+	it('Unexpected closing bracket', () => {
+		const highlights = validateText('{"a":false,"b":12]}');
+
+		assert.strictEqual(highlights.length, 1);
+		assert.deepStrictEqual(highlights[0], error(17, 18, 'Unexpected closing bracket ]'));
 	});
 });
