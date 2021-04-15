@@ -34,14 +34,15 @@
 		},
 		"name": {
 			"patterns": [{
-				"match": "(\")(name)(\"):\\s*(\")([A-Za-z_][A-Za-z0-9_]*)(\")",
+				"match": "(\")(name)(\"):\\s*(\")([A-Za-z_][A-Za-z0-9_]*\.)*([A-Za-z_][A-Za-z0-9_]*)(\")",
 				"captures": {
 					"1": { "name": "string.quoted.avroavsc"},
 					"2": { "name": "keyword.struct.avroavsc"},
 					"3": { "name": "string.quoted.avroavsc"},
 					"4": { "name": "string.quoted.avroavsc"},
 					"5": { "name": "entity.name.class.avroavsc"},
-					"6": { "name": "string.quoted.avroavsc"}
+					"6": { "name": "entity.name.class.avroavsc"},
+					"7": { "name": "string.quoted.avroavsc"}
 				}
 			}]
 		},
